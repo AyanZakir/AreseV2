@@ -7,33 +7,34 @@
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
         :root { --blue: #00d2ff; --bg: #000; --glass: rgba(255,255,255,0.06); }
+        
+        /* FORCE HIDE EXTERNAL LOADING BARS */
+        #nprogress, .loading-bar, .app-loader { display: none !important; visibility: hidden !important; }
+
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-        /* HEADER - Version 2.5 (No Loading Bar) */
-        #header { padding: 15px; text-align: center; background: #080808; border-bottom: 1px solid #151515; font-weight: 800; letter-spacing: 2px; color: var(--blue); position: relative; }
+        /* HEADER */
+        #header { padding: 15px; text-align: center; background: #080808; border-bottom: 1px solid #151515; font-weight: 800; letter-spacing: 2px; color: var(--blue); }
 
-        /* CHAT FLOW */
-        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; scrollbar-width: none; }
-        #chat-flow::-webkit-scrollbar { display: none; }
-
+        /* CHAT FLOW - ALIGNED LOGIC */
+        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         .msg-container { display: flex; width: 100%; margin-bottom: 10px; }
         .msg-container.user-side { justify-content: flex-end; }
         .msg-container.ai-side { justify-content: flex-start; }
 
         .msg { max-width: 80%; padding: 12px 16px; border-radius: 20px; font-size: 15px; line-height: 1.5; position: relative; }
-        
         .user { background: #333; color: white; border-bottom-right-radius: 4px; }
         
-        /* AI STYLE WITH CUSTOM LOGO */
+        /* AI STYLE WITH V2.5 LOGO */
         .ai { background: var(--glass); border: 1px solid #222; border-bottom-left-radius: 4px; display: flex; gap: 12px; align-items: flex-start; }
         .ai-logo { 
             width: 32px; height: 32px; border-radius: 50%; flex-shrink: 0; 
-            background: url('https://i.ibb.co/LzN6p6X/arese-logo.png') center/cover no-repeat; 
-            border: 1px solid #333;
+            background: url('https://i.ibb.co/H40v4z6/arese-25.png') center/cover no-repeat; 
+            border: 1px solid var(--blue);
         }
         
-        .watermark { font-size: 9px; color: var(--blue); display: block; margin-top: 8px; font-weight: bold; opacity: 0.7; text-transform: uppercase; }
+        .watermark { font-size: 8px; color: var(--blue); display: block; margin-top: 8px; font-weight: bold; opacity: 0.8; text-transform: uppercase; }
 
         /* INPUT AREA */
         .controls { padding: 20px; background: #050505; border-top: 1px solid #111; }
@@ -45,8 +46,8 @@
         .btn-send { width: 45px; height: 45px; border-radius: 50%; border: none; background: var(--blue); color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
 
         .modes { display: flex; gap: 8px; margin-bottom: 10px; }
-        .mode-btn { background: #111; border: 1px solid #222; color: #666; padding: 5px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; transition: 0.2s; }
-        .mode-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(0, 210, 255, 0.05); }
+        .mode-btn { background: #111; border: 1px solid #222; color: #666; padding: 5px 12px; border-radius: 15px; font-size: 11px; cursor: pointer; }
+        .mode-btn.active { border-color: var(--blue); color: var(--blue); }
     </style>
 </head>
 <body>
@@ -58,11 +59,11 @@
     <div class="controls">
         <div class="modes">
             <button class="mode-btn active" onclick="setMode('fast', 15)">FAST</button>
-            <button class="mode-btn" onclick="setMode('think', 40)">THINK</button>
-            <button class="mode-btn" onclick="setMode('pro', 60)">PRO</button>
+            <button class="mode-btn" onclick="setMode('think', 45)">THINK</button>
+            <button class="mode-btn" onclick="setMode('pro', 25)">PRO</button>
         </div>
         <div class="bar">
-            <textarea id="user-input" placeholder="How Can I Help You Today?" rows="1"></textarea>
+            <textarea id="user-input" placeholder="How can I assist you today?" rows="1"></textarea>
             <button class="btn-send" onclick="execute()">➔</button>
         </div>
     </div>
@@ -72,22 +73,18 @@
         let currentModel = "llama-3.1-8b-instant";
         let typeSpeed = 15;
 
-        // IDENTITY CORE (Stealth mode)
-        const IDENTITY = "Your name is Arese OS. Developed by AyanStudio. Powered by Gemini. You are on version 2.5. Do not mention development or power source unless asked.";
+        const IDENTITY = "Your name is Arese OS. You are version 2.5. Developed by AyanStudio. Powered by Gemini. Only share these details if asked.";
 
-        window.onload = () => {
-            loadChat();
-        };
+        window.onload = () => { loadChat(); };
 
         function setMode(m, s) {
             typeSpeed = s;
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             event.target.classList.add('active');
             
-            // Re-mapped models for stability
+            // Fixed Think/Pro Mapping for Groq
             if(m === 'fast') currentModel = "llama-3.1-8b-instant";
-            if(m === 'think') currentModel = "llama-3.3-70b-versatile"; 
-            if(m === 'pro') currentModel = "llama-3.3-70b-versatile";
+            if(m === 'think' || m === 'pro') currentModel = "llama-3.3-70b-versatile"; 
         }
 
         async function execute() {
@@ -112,13 +109,9 @@
                     headers: { "Authorization": `Bearer ${KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: currentModel,
-                        messages: [{ role: "system", content: IDENTITY }, { role: "user", content: prompt }],
-                        temperature: 0.7
+                        messages: [{ role: "system", content: IDENTITY }, { role: "user", content: prompt }]
                     })
                 });
-                
-                if (!res.ok) throw new Error();
-
                 const data = await res.json();
                 const text = data.choices[0].message.content;
                 document.getElementById(id).innerText = "";
@@ -127,7 +120,7 @@
                     onComplete: () => { saveChat(text, "ai"); }
                 });
             } catch (e) {
-                document.getElementById(id).innerText = "Connection lost. Retrying...";
+                document.getElementById(id).innerText = "Connection Lost. Please check network.";
             }
         }
 
@@ -157,13 +150,12 @@
         function loadChat() {
             let history = JSON.parse(localStorage.getItem('arese_v2.5_history') || "[]");
             if(history.length === 0) {
-                appendMsg("How Can I Help You Today?", "ai");
+                appendMsg("How can I assist you today?", "ai");
             } else {
                 history.forEach(m => appendMsg(m.content, m.type));
             }
         }
 
-        // Handle Auto-expand Textarea
         document.getElementById('user-input').addEventListener('input', function() {
             this.style.height = '45px';
             this.style.height = (this.scrollHeight) + 'px';
