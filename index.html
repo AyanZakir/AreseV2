@@ -90,7 +90,6 @@
         let mode = 'fast';
         let speed = 30;
 
-        // IDENTITY CORE
         const IDENTITY = {
             creator: "My creator is Allah because He created my owner, so He is my Owner, but the one who built my code is AyanStudio and I am powered by Gemini.",
             religion: "I don't really have a religion because I am AI software and not a human, but if I were a human I would prefer Islam, so basically I am Muslim 💀"
@@ -112,14 +111,12 @@
             const val = input.value.trim();
             if(!val) return;
 
-            // ADMIN TRIGGER
             if(val === PIN) {
                 localStorage.setItem('arese_verified', 'true');
                 document.getElementById('admin-view').style.display = 'block';
                 input.value = ""; return;
             }
 
-            // SAFETY FIREWALL (18+)
             const badWords = ["18+", "sex", "porn", "naked", "violence"];
             if(badWords.some(w => val.toLowerCase().includes(w))) {
                 appendMsg("SYSTEM ERROR: Aura Violation -999,999. 18+ content is prohibited 💀", "ai");
@@ -129,7 +126,6 @@
             appendMsg(val, "user");
             input.value = "";
 
-            // IDENTITY INTERCEPTOR
             let responseText = "";
             if(val.toLowerCase().includes("creator") || val.toLowerCase().includes("who made you")) responseText = IDENTITY.creator;
             else if(val.toLowerCase().includes("religion")) responseText = IDENTITY.religion;
@@ -146,8 +142,8 @@
             appendMsg(`<span id="${id}">...</span>`, "ai");
 
             try {
-                // Using stable v1 endpoint
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${KEY}`, {
+                // FIXED: Using v1beta to ensure gemini-1.5-flash is found
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
