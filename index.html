@@ -3,173 +3,44 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese OS v2.5</title>
+    <title>Arese OS v2.0</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
-    <style>
-        :root { --blue: #00d2ff; --bg: #000; --glass: rgba(255,255,255,0.08); }
-        
-        /* AGGRESSIVE HIDE FOR WEB-WRAPPER GLITCHES */
-        #nprogress, .loading-bar, .app-loader, [class*="loading"] { display: none !important; opacity: 0 !important; }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: #fff; height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
-
-        /* HEADER */
-        #header { padding: 15px; text-align: center; background: #080808; border-bottom: 1px solid #151515; font-weight: 800; letter-spacing: 2px; color: var(--blue); flex-shrink: 0; z-index: 100; }
-
-        /* CHAT FLOW - RIGHT SIDE SLIDER */
-        #chat-flow { 
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; 
-            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-            scrollbar-gutter: stable;
-        }
-
-        /* Improved Right-Side Pill Slider */
-        #chat-flow::-webkit-scrollbar { width: 8px; }
-        #chat-flow::-webkit-scrollbar-track { background: transparent; }
-        #chat-flow::-webkit-scrollbar-thumb { 
-            background: rgba(0, 210, 255, 0.3); 
-            border-radius: 20px; 
-            border: 2px solid black; /* Space from edge */
-        }
-        #chat-flow::-webkit-scrollbar-thumb:active { background: var(--blue); }
-
-        .msg-container { display: flex; width: 100%; }
-        .user-side { justify-content: flex-end; }
-        .ai-side { justify-content: flex-start; }
-
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; border: 1px solid transparent; }
-        .user { background: #222; color: white; border-bottom-right-radius: 4px; border-color: #333; }
-        .ai { background: var(--glass); border-color: #222; border-bottom-left-radius: 4px; }
-        
-        .watermark { font-size: 8px; color: var(--blue); display: block; margin-top: 10px; font-weight: bold; opacity: 0.5; letter-spacing: 1px; }
-
-        /* INPUT AREA */
-        .controls { padding: 15px 20px 30px 20px; background: #050505; border-top: 1px solid #111; flex-shrink: 0; }
-        .bar { display: flex; gap: 12px; align-items: flex-end; }
-        textarea { 
-            flex: 1; background: #111; border: 1px solid #222; color: #fff; padding: 12px 18px; 
-            border-radius: 25px; outline: none; resize: none; min-height: 48px; max-height: 120px; font-size: 16px;
-        }
-        .btn-send { width: 48px; height: 48px; border-radius: 50%; border: none; background: var(--blue); color: #000; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
-
-        .modes { display: flex; gap: 10px; margin-bottom: 12px; }
-        .mode-btn { background: #111; border: 1px solid #222; color: #666; padding: 6px 14px; border-radius: 18px; font-size: 11px; font-weight: 600; cursor: pointer; }
-        .mode-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(0, 210, 255, 0.1); }
-    </style>
 </head>
 <body>
+    <div id="top-bar">
+        <div id="os-logo">ARESE v2.0</div>
+        <button id="call-btn" onclick="startLiveCall()">📞 LIVE CALL</button>
+    </div>
 
-    <div id="header">ARESE OS v2.5</div>
+    <div class="mode-selector">
+        <button class="mode-box" id="mode-fast" onclick="setMode('fast')">FAST</button>
+        <button class="mode-box active" id="mode-think" onclick="setMode('think')">THINK</button>
+        <button class="mode-box" id="mode-pro" onclick="setMode('pro')">PRO</button>
+    </div>
 
-    <div id="chat-flow"></div>
+    <div id="chat-flow">
+        </div>
 
     <div class="controls">
-        <div class="modes">
-            <button class="mode-btn active" onclick="setMode('fast', 15)">FAST</button>
-            <button class="mode-btn" onclick="setMode('think', 45)">THINK</button>
-            <button class="mode-btn" onclick="setMode('pro', 25)">PRO</button>
+        <div id="plus-menu" class="hidden">
+            <button onclick="pickMedia('photos')">🖼️ Photos</button>
+            <button onclick="pickMedia('videos')">🎬 Videos</button>
+            <button onclick="pickMedia('docs')">📄 Documents</button>
+            <button onclick="pickMedia('audio')">🎵 Audio</button>
+            <button onclick="openCamera()">📷 Camera</button>
         </div>
-        <div class="bar">
+
+        <div class="input-bar">
+            <button class="btn-plus" onclick="togglePlusMenu()">+</button>
             <textarea id="user-input" placeholder="Message Arese..." rows="1"></textarea>
-            <button class="btn-send" onclick="execute()">➔</button>
+            <button id="action-btn" onclick="handleAction()">➔</button>
+            <button id="voice-msg-btn" onclick="recordVoice()">🎤</button>
         </div>
     </div>
 
-    <script>
-        const KEY = "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"; 
-        let currentModel = "llama-3.1-8b-instant";
-        let typeSpeed = 15;
-
-        // UPDATED IDENTITY WITH EMOJIS
-        const IDENTITY = `Identity: Arese OS v2.5. 
-        Origin: Developed by AyanStudio. 
-        Engine: Powered by Gemini. 
-        Behavior: Be helpful, tech-savvy, and friendly. Use emojis to express yourself 🦾🥀🔒. 
-        Math: Stay 100% accurate (e.g., 9+9=18). NEVER mention Elon Musk or being made by anyone else.`;
-
-        window.onload = () => { loadChat(); };
-
-        function setMode(m, s) {
-            typeSpeed = s;
-            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            if(m === 'fast') currentModel = "llama-3.1-8b-instant";
-            if(m === 'think' || m === 'pro') currentModel = "llama-3.3-70b-versatile"; 
-        }
-
-        async function execute() {
-            const input = document.getElementById('user-input');
-            const val = input.value.trim();
-            if(!val) return;
-
-            appendMsg(val, "user");
-            saveChat(val, "user");
-            input.value = "";
-            input.style.height = '48px';
-            fetchAI(val);
-        }
-
-        async function fetchAI(prompt) {
-            const id = "ai-" + Date.now();
-            appendMsg(`<span id="${id}">...</span>`, "ai");
-
-            try {
-                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    headers: { "Authorization": `Bearer ${KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        model: currentModel,
-                        messages: [{ role: "system", content: IDENTITY }, { role: "user", content: prompt }],
-                        temperature: 0.5 // Balanced for emojis + logic
-                    })
-                });
-                const data = await res.json();
-                const text = data.choices[0].message.content;
-                document.getElementById(id).innerText = "";
-                new Typed(`#${id}`, { 
-                    strings: [text], typeSpeed: typeSpeed, showCursor: false,
-                    onComplete: () => { saveChat(text, "ai"); }
-                });
-            } catch (e) {
-                document.getElementById(id).innerText = "Aura Link failure. ⚠️";
-            }
-        }
-
-        function appendMsg(content, type) {
-            const flow = document.getElementById('chat-flow');
-            const container = document.createElement('div');
-            container.className = `msg-container ${type}-side`;
-            
-            if(type === 'ai') {
-                container.innerHTML = `<div class="msg ai">${content}<span class="watermark">POWERED BY GEMINI</span></div>`;
-            } else {
-                container.innerHTML = `<div class="msg user">${content}</div>`;
-            }
-            
-            flow.appendChild(container);
-            flow.scrollTop = flow.scrollHeight;
-        }
-
-        function saveChat(content, type) {
-            let history = JSON.parse(localStorage.getItem('arese_v2.5_final') || "[]");
-            history.push({content, type});
-            localStorage.setItem('arese_v2.5_final', JSON.stringify(history));
-        }
-
-        function loadChat() {
-            let history = JSON.parse(localStorage.getItem('arese_v2.5_final') || "[]");
-            if(history.length === 0) {
-                appendMsg("System Online. How can I assist you today? 🦾", "ai");
-            } else {
-                history.forEach(m => appendMsg(m.content, m.type));
-            }
-        }
-
-        document.getElementById('user-input').addEventListener('input', function() {
-            this.style.height = '48px';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-    </script>
+    <script src="chat_system.js"></script>
+    <script src="media_handler.js"></script>
+    <script src="engine.js"></script>
 </body>
 </html>
