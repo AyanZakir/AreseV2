@@ -1,31 +1,25 @@
-let isGenerating = false;
-
 function handleSend() {
     const input = document.getElementById('user-input');
-    if (isGenerating) {
-        stopResponse(); //
-    } else {
-        if (!input.value.trim()) return;
-        appendMsg(input.value, 'user');
-        input.value = "";
-        triggerAI();
+    const text = input.value.trim();
+    
+    if (text === "") return; // Don't send empty
+
+    // 1. Add User Message to left
+    appendMsg(text, 'user');
+    input.value = "";
+    input.style.height = "auto";
+
+    // 2. Call the AI Engine (File 5)
+    if (typeof triggerAI === "function") {
+        triggerAI(text); 
     }
 }
 
-function triggerAI() {
-    isGenerating = true;
-    const btn = document.getElementById('action-btn');
-    btn.innerHTML = '<i data-lucide="square-stop"></i>'; // Stop icon
-    btn.style.backgroundColor = "#ff4b4b"; // Alert Red
-    lucide.createIcons();
-    // API logic follows in engine.js
+function appendMsg(text, type) {
+    const container = document.getElementById('chat-container');
+    const div = document.createElement('div');
+    div.className = `${type}-msg`;
+    div.innerText = text;
+    container.appendChild(div);
+    container.scrollTop = container.scrollHeight; // Auto scroll
 }
-
-function stopResponse() {
-    isGenerating = false;
-    const btn = document.getElementById('action-btn');
-    btn.innerHTML = '<i data-lucide="arrow-up"></i>';
-    btn.style.backgroundColor = "var(--blue)";
-    lucide.createIcons();
-}
-
