@@ -142,8 +142,8 @@
             appendMsg(`<span id="${id}">...</span>`, "ai");
 
             try {
-                // FIXED: Using v1beta to ensure gemini-1.5-flash is found
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${KEY}`, {
+                // FORCE PATCH: Using 'gemini-pro' which is supported by all key versions
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${KEY}`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
