@@ -4,45 +4,40 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Arese OS v2.0</title>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <header>
-        <div class="logo">AreseOS <span class="v-tag">v2.0</span></div>
-        <button class="call-btn" onclick="startCall()"><i data-lucide="phone"></i> LIVE CALL</button>
-    </header>
+    <div id="top-bar">
+        <div class="logo">ARESE <span class="v-tag">v2.0</span></div>
+        <button class="call-btn" onclick="startLiveCall()"><i class="fas fa-phone"></i> LIVE CALL</button>
+    </div>
 
     <div class="mode-selector">
-        <div class="mode-pill" onclick="setMode('fast', this)">Fast</div>
-        <div class="mode-pill active" onclick="setMode('think', this)">Think</div>
-        <div class="mode-pill" onclick="setMode('pro', this)">Pro</div>
+        <button class="m-btn" id="m-fast" onclick="setMode('fast')">FAST</button>
+        <button class="m-btn active" id="m-think" onclick="setMode('think')">THINK</button>
+        <button class="m-btn" id="m-pro" onclick="setMode('pro')">PRO</button>
     </div>
 
-    <main id="chat-container">
-        </main>
+    <div id="chat-flow"></div>
 
-    <div id="media-tray" class="hidden glass">
-        <div class="media-row">
-            <div class="m-item" onclick="openCam()"><i data-lucide="camera"></i><span>Camera</span></div>
-            <div class="m-item" onclick="pick('image/*')"><i data-lucide="image"></i><span>Gallery</span></div>
-            <div class="m-item" onclick="pick('*/*')"><i data-lucide="file"></i><span>Files</span></div>
-            <div class="m-item" onclick="pick('audio/*')"><i data-lucide="music"></i><span>Audio</span></div>
-        </div>
+    <div id="media-tray" class="hidden">
+        <button onclick="pick('image/*')"><i class="fas fa-image"></i> Photos</button>
+        <button onclick="pick('video/*')"><i class="fas fa-video"></i> Videos</button>
+        <button onclick="pick('.pdf,.doc')"><i class="fas fa-file-alt"></i> Documents</button>
+        <button onclick="pick('audio/*')"><i class="fas fa-music"></i> Audio</button>
+        <button onclick="openCamera()"><i class="fas fa-camera"></i> Camera</button>
     </div>
 
-    <div class="bottom-area">
-        <div class="input-pill glass">
-            <button class="icon-btn" onclick="toggleMedia()"><i data-lucide="plus"></i></button>
-            <textarea id="user-input" placeholder="Ask Arese..." rows="1" oninput="autoResize(this)"></textarea>
-            <button id="send-btn" class="main-send" onclick="handleSend()"><i data-lucide="arrow-up"></i></button>
-            <button class="icon-btn mic" onclick="startVoice()"><i data-lucide="mic"></i></button>
-        </div>
+    <div class="input-area">
+        <button class="plus-btn" onclick="toggleMenu()">+</button>
+        <textarea id="user-input" placeholder="Message Arese..." rows="1"></textarea>
+        <button id="send-btn" onclick="execute()">➔</button>
+        <button class="mic-btn" onclick="recordVoice()"><i class="fas fa-microphone"></i></button>
     </div>
 
     <script src="chat.js"></script>
-    <script src="media.js"></script>
     <script src="engine.js"></script>
-    <script>lucide.createIcons();</script>
 </body>
 </html>
