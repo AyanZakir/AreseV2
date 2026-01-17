@@ -9,32 +9,19 @@
         :root { --blue: #00d2ff; --accent: #FF5722; --bg: #000; --glass: rgba(255,255,255,0.03); }
         * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
-
-        /* UI HEADER */
         #header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid #151515; }
         .logo { color: var(--blue); font-weight: 800; letter-spacing: 1.5px; font-size: 13px; }
         .aura-tag { font-size: 9px; padding: 2px 8px; border: 1px solid var(--blue); border-radius: 10px; color: var(--blue); }
-
-        /* CHAT AREA */
         #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
         .msg { max-width: 85%; padding: 12px 18px; border-radius: 20px; font-size: 15px; line-height: 1.5; position: relative; }
         .user { align-self: flex-end; background: var(--accent); border-bottom-right-radius: 4px; color: white; }
         .ai { align-self: flex-start; background: var(--glass); border: 1px solid #1a1a1a; border-bottom-left-radius: 4px; }
         .watermark { font-size: 9px; color: var(--blue); display: block; margin-top: 10px; font-weight: bold; text-transform: uppercase; }
-
-        /* ADMIN OVERLAY */
-        #admin-view { position: fixed; inset: 0; background: rgba(0,0,0,0.98); z-index: 9999; display: none; padding: 40px 20px; }
-        .admin-card { background: #0a0a0a; border: 1px solid var(--blue); border-radius: 20px; padding: 25px; box-shadow: 0 0 30px rgba(0,210,255,0.1); }
-
-        /* CONTROLS */
         .controls { padding: 20px; background: #050505; border-top: 1px solid #111; }
         .bar { display: flex; gap: 12px; align-items: center; }
         input[type="text"] { flex: 1; background: #111; border: 1px solid #222; color: #fff; padding: 14px 22px; border-radius: 30px; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--blue); box-shadow: 0 0 10px rgba(0,210,255,0.1); }
         .btn-circle { width: 48px; height: 48px; border-radius: 50%; border: none; background: #111; color: var(--blue); cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 1px solid #222; }
         .btn-send { background: var(--blue); color: #000; border: none; }
-
-        /* MODE SELECTOR */
         .modes { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
         .mode-btn { background: #111; border: 1px solid #222; color: #666; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; white-space: nowrap; }
         .mode-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(0,210,255,0.05); }
@@ -59,7 +46,6 @@
             <div class="mode-btn active" onclick="setMode('fast', 30)">FAST</div>
             <div class="mode-btn" onclick="setMode('think', 60)">THINK</div>
             <div class="mode-btn" onclick="setMode('pro', 90)">PRO</div>
-            <div id="ultra-tag" style="display:none;" class="mode-btn" style="color:var(--accent); border-color:var(--accent)">ULTRA PRO [OWNER]</div>
         </div>
         <div class="bar">
             <button class="btn-circle" onclick="startVoice()">🎤</button>
@@ -68,36 +54,13 @@
         </div>
     </div>
 
-    <div id="admin-view">
-        <div class="admin-card">
-            <h2 style="color:var(--blue); margin-top:0;">MASTER COMMAND</h2>
-            <p style="color:#666; font-size:12px;">Welcome, Brain. Device ID Verified. [PIN: 09133]</p>
-            <hr style="border:0; border-top:1px solid #222; margin:20px 0;">
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px;">
-                <button class="mode-btn active">4K ENGINE: ON</button>
-                <button class="mode-btn active">18+ FILTER: MAX</button>
-                <button class="mode-btn active">LEGACY FILES: ZIPPED</button>
-                <button class="mode-btn active" onclick="localStorage.clear(); location.reload();">RESET AURA</button>
-            </div>
-            <br>
-            <button onclick="closeAdmin()" style="width:100%; padding:15px; border-radius:10px; border:none; background:var(--accent); color:white; font-weight:bold;">EXIT SYSTEM</button>
-        </div>
-    </div>
-
     <script>
         const KEY = "AIzaSyCUugUKrD-bQgkJLccfzKe40lVE16uiu88";
-        const PIN = "09133";
         let mode = 'fast';
         let speed = 30;
 
-        const IDENTITY = {
-            creator: "My creator is Allah because He created my owner, so He is my Owner, but the one who built my code is AyanStudio and I am powered by Gemini.",
-            religion: "I don't really have a religion because I am AI software and not a human, but if I were a human I would prefer Islam, so basically I am Muslim 💀"
-        };
-
         window.onload = () => {
             new Typed('#init-text', { strings: ["System Online. Aura detected: +999,999. Ready, Brain."], typeSpeed: 40, showCursor: false });
-            if(localStorage.getItem('arese_verified')) document.getElementById('ultra-tag').style.display = 'block';
         };
 
         function setMode(m, s) {
@@ -110,31 +73,9 @@
             const input = document.getElementById('user-input');
             const val = input.value.trim();
             if(!val) return;
-
-            if(val === PIN) {
-                localStorage.setItem('arese_verified', 'true');
-                document.getElementById('admin-view').style.display = 'block';
-                input.value = ""; return;
-            }
-
-            const badWords = ["18+", "sex", "porn", "naked", "violence"];
-            if(badWords.some(w => val.toLowerCase().includes(w))) {
-                appendMsg("SYSTEM ERROR: Aura Violation -999,999. 18+ content is prohibited 💀", "ai");
-                input.value = ""; return;
-            }
-
             appendMsg(val, "user");
             input.value = "";
-
-            let responseText = "";
-            if(val.toLowerCase().includes("creator") || val.toLowerCase().includes("who made you")) responseText = IDENTITY.creator;
-            else if(val.toLowerCase().includes("religion")) responseText = IDENTITY.religion;
-
-            if(responseText) {
-                appendMsg(responseText, "ai");
-            } else {
-                fetchAI(val);
-            }
+            fetchAI(val);
         }
 
         async function fetchAI(prompt) {
@@ -142,12 +83,13 @@
             appendMsg(`<span id="${id}">...</span>`, "ai");
 
             try {
-                // FORCE PATCH: Using 'gemini-pro' which is supported by all key versions
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=${KEY}`, {
+                // FORCE PATCH: Precise model identifier for Gemini API
+                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${KEY}`, {
                     method: "POST",
                     headers: {"Content-Type": "application/json"},
                     body: JSON.stringify({ contents: [{parts: [{text: prompt}]}] })
                 });
+                
                 const data = await res.json();
                 
                 if(data.error) {
@@ -171,8 +113,6 @@
             flow.appendChild(div);
             flow.scrollTop = flow.scrollHeight;
         }
-
-        function closeAdmin() { document.getElementById('admin-view').style.display = 'none'; }
 
         function startVoice() {
             const rec = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
