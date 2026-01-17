@@ -4,110 +4,98 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Arese OS v2.5</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
-        :root { --blue: #00d2ff; --bg: #000; --glass: rgba(255,255,255,0.08); }
-        
-        /* KILL WEB-WRAPPER OVERLAYS */
-        #nprogress, .loading-bar, .app-loader { display: none !important; opacity: 0 !important; }
-
-        * { box-sizing: border-box; font-family: 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --blue: #00d2ff; --bg: #0b0b0b; --glass: rgba(255,255,255,0.08); }
+        * { box-sizing: border-box; font-family: 'Inter', 'Segoe UI', sans-serif; -webkit-tap-highlight-color: transparent; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; width: 100vw; display: flex; flex-direction: column; overflow: hidden; position: fixed; }
 
-        /* HEADER */
-        #header { padding: 15px; text-align: center; background: #080808; border-bottom: 1px solid #151515; font-weight: 800; letter-spacing: 2px; color: var(--blue); flex-shrink: 0; }
+        #header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid #151515; flex-shrink: 0; }
+        .logo { font-weight: 800; letter-spacing: 2px; color: var(--blue); }
+        .call-btn { background: #fff; color: #000; border: none; padding: 5px 12px; border-radius: 20px; font-weight: bold; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 5px; }
 
-        /* CHAT FLOW - RIGHT SIDE SLIDER */
-        #chat-flow { 
-            flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; 
-            scroll-behavior: smooth; -webkit-overflow-scrolling: touch;
-        }
-        #chat-flow::-webkit-scrollbar { width: 6px; }
-        #chat-flow::-webkit-scrollbar-track { background: transparent; }
-        #chat-flow::-webkit-scrollbar-thumb { background: rgba(0, 210, 255, 0.3); border-radius: 10px; }
-
+        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; scroll-behavior: smooth; }
         .msg-container { display: flex; width: 100%; }
-        .user-side { justify-content: flex-end; }
-        .ai-side { justify-content: flex-start; }
+        .user-side { justify-content: flex-start; } /* User on Left */
+        .ai-side { justify-content: flex-end; } /* Arese on Right */
 
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; }
-        .user { background: #222; color: white; border-bottom-right-radius: 4px; border: 1px solid #333; }
-        .ai { background: var(--glass); border: 1px solid #222; border-bottom-left-radius: 4px; }
+        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; }
+        .user { background: #222; border-bottom-left-radius: 4px; }
+        .ai { background: var(--glass); border: 1px solid var(--blue); border-bottom-right-radius: 4px; color: var(--blue); text-align: right; }
         
-        .watermark { font-size: 8px; color: var(--blue); display: block; margin-top: 10px; font-weight: bold; opacity: 0.5; }
-
-        /* INPUT AREA + PLUS BUTTON */
-        .controls { padding: 15px 20px 30px 20px; background: #050505; border-top: 1px solid #111; flex-shrink: 0; }
-        .bar { display: flex; gap: 10px; align-items: flex-end; }
-        
-        .btn-plus { 
-            width: 48px; height: 48px; border-radius: 50%; border: 1px solid #222; 
-            background: #111; color: var(--blue); font-size: 24px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-        }
-
-        textarea { 
-            flex: 1; background: #111; border: 1px solid #222; color: #fff; padding: 12px 18px; 
-            border-radius: 25px; outline: none; resize: none; min-height: 48px; max-height: 120px; font-size: 16px;
-        }
-
-        .btn-send { 
-            width: 48px; height: 48px; border-radius: 50%; border: none; 
-            background: var(--blue); color: #000; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; 
-        }
-
-        .modes { display: flex; gap: 10px; margin-bottom: 12px; }
-        .mode-btn { background: #111; border: 1px solid #222; color: #666; padding: 6px 14px; border-radius: 18px; font-size: 11px; font-weight: 600; cursor: pointer; }
+        .controls { padding: 15px 20px 30px 20px; background: #050505; border-top: 1px solid #111; position: relative; }
+        .modes { display: flex; gap: 8px; margin-bottom: 15px; justify-content: center; }
+        .mode-btn { background: #111; border: 1px solid #222; color: #666; padding: 6px 14px; border-radius: 18px; font-size: 11px; font-weight: 600; cursor: pointer; transition: 0.3s; }
         .mode-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(0, 210, 255, 0.1); }
+
+        /* Media Tray Overlay */
+        #media-tray { position: absolute; bottom: 100px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 20px; display: none; flex-direction: column; padding: 10px; z-index: 10; width: 180px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .m-item { display: flex; align-items: center; gap: 10px; padding: 12px; color: #eee; cursor: pointer; border-radius: 10px; font-size: 14px; }
+        .m-item:hover { background: #333; }
+        .show { display: flex !important; }
+
+        .bar { display: flex; gap: 12px; align-items: center; background: #111; padding: 5px 15px; border-radius: 30px; border: 1px solid #222; }
+        textarea { flex: 1; background: transparent; border: none; color: #fff; padding: 10px 0; outline: none; resize: none; max-height: 120px; font-size: 16px; }
+        .btn-send { background: var(--blue); color: #000; border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .icon-btn { color: #888; background: transparent; border: none; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <div id="header">ARESE OS v2.5</div>
+    <div id="header">
+        <div class="logo">ARESE <span style="font-size: 10px;">v2.5</span></div>
+        <button class="call-btn" onclick="startCall()"><i data-lucide="phone"></i> LIVE CALL</button>
+    </div>
 
     <div id="chat-flow"></div>
 
     <div class="controls">
+        <div id="media-tray">
+            <div class="m-item" onclick="triggerFile()"><i data-lucide="image"></i> Photos</div>
+            <div class="m-item" onclick="triggerFile()"><i data-lucide="video"></i> Videos</div>
+            <div class="m-item" onclick="triggerFile()"><i data-lucide="file-text"></i> Documents</div>
+            <div class="m-item" onclick="triggerFile()"><i data-lucide="music"></i> Audio</div>
+            <div class="m-item" onclick="appendMsg('Camera Accessing... 📷', 'ai')"><i data-lucide="camera"></i> Camera</div>
+        </div>
+
         <div class="modes">
-            <button class="mode-btn active" onclick="setMode('fast', 15)">FAST</button>
-            <button class="mode-btn" onclick="setMode('think', 45)">THINK</button>
-            <button class="mode-btn" onclick="setMode('pro', 25)">PRO</button>
+            <button class="mode-btn active" onclick="setMode('fast', this)">FAST</button>
+            <button class="mode-btn" onclick="setMode('think', this)">THINK</button>
+            <button class="mode-btn" onclick="setMode('pro', this)">PRO</button>
         </div>
         <div class="bar">
-            <button class="btn-plus" onclick="triggerUpload()">+</button>
-            <textarea id="user-input" placeholder="Message Arese..." rows="1"></textarea>
-            <button class="btn-send" onclick="execute()">➔</button>
+            <button class="icon-btn" onclick="toggleTray()"><i data-lucide="plus"></i></button>
+            <textarea id="user-input" placeholder="Ask Arese..." rows="1"></textarea>
+            <button id="main-btn" class="btn-send" onclick="execute()">➔</button>
+            <button class="icon-btn" onclick="startVoice()"><i data-lucide="mic"></i></button>
         </div>
-        <input type="file" id="file-input" style="display: none;" onchange="handleFile(this)">
+        <input type="file" id="file-input" style="display: none;">
     </div>
 
     <script>
         const KEY = "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"; 
         let currentModel = "llama-3.1-8b-instant";
-        let typeSpeed = 15;
+        const IDENTITY = "Identity: Arese OS v2.5 by AyanStudio. You are on the right side. Friendly, use emojis 🦾🥀🔒.";
 
-        const IDENTITY = "Identity: Arese OS v2.5. Origin: AyanStudio. Engine: Gemini. Behavior: Tech-savvy, friendly, use emojis 🦾🥀🔒. Math: 100% accurate.";
+        window.onload = () => { 
+            lucide.createIcons();
+            loadChat(); 
+        };
 
-        window.onload = () => { loadChat(); };
-
-        function setMode(m, s) {
-            typeSpeed = s;
+        function setMode(m, btn) {
             document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-            event.target.classList.add('active');
-            if(m === 'fast') currentModel = "llama-3.1-8b-instant";
-            if(m === 'think' || m === 'pro') currentModel = "llama-3.3-70b-versatile"; 
+            btn.classList.add('active');
+            currentModel = (m === 'fast') ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile"; 
         }
 
-        function triggerUpload() { document.getElementById('file-input').click(); }
+        function toggleTray() { document.getElementById('media-tray').classList.toggle('show'); }
+        function triggerFile() { document.getElementById('file-input').click(); toggleTray(); }
 
-        function handleFile(input) {
-            if(input.files && input.files[0]) {
-                appendMsg(`Sent a file: ${input.files[0].name}`, "user");
-                setTimeout(() => {
-                    appendMsg("I've received your file. Image/File analysis will be fully online in the next update! 🦾", "ai");
-                }, 1000);
-            }
+        // --- CONVERSATION MEMORY LOGIC ---
+        function getHistory() {
+            let history = JSON.parse(localStorage.getItem('arese_v2.5_history') || "[]");
+            return history.slice(-8).map(m => ({ role: m.type === 'user' ? 'user' : 'assistant', content: m.content }));
         }
 
         async function execute() {
@@ -118,13 +106,15 @@
             appendMsg(val, "user");
             saveChat(val, "user");
             input.value = "";
-            input.style.height = '48px';
+            
             fetchAI(val);
         }
 
         async function fetchAI(prompt) {
             const id = "ai-" + Date.now();
             appendMsg(`<span id="${id}">...</span>`, "ai");
+            
+            const history = getHistory();
 
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -132,56 +122,41 @@
                     headers: { "Authorization": `Bearer ${KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: currentModel,
-                        messages: [{ role: "system", content: IDENTITY }, { role: "user", content: prompt }],
-                        temperature: 0.5
+                        messages: [{ role: "system", content: IDENTITY }, ...history, { role: "user", content: prompt }],
+                        temperature: 0.6
                     })
                 });
                 const data = await res.json();
                 const text = data.choices[0].message.content;
+                
                 document.getElementById(id).innerText = "";
                 new Typed(`#${id}`, { 
-                    strings: [text], typeSpeed: typeSpeed, showCursor: false,
+                    strings: [text], typeSpeed: 20, showCursor: false,
                     onComplete: () => { saveChat(text, "ai"); }
                 });
-            } catch (e) {
-                document.getElementById(id).innerText = "Aura Link failure. ⚠️";
-            }
+            } catch (e) { document.getElementById(id).innerText = "Aura Link failure. ⚠️"; }
         }
 
         function appendMsg(content, type) {
             const flow = document.getElementById('chat-flow');
             const container = document.createElement('div');
             container.className = `msg-container ${type}-side`;
-            
-            if(type === 'ai') {
-                container.innerHTML = `<div class="msg ai">${content}<span class="watermark">POWERED BY GEMINI</span></div>`;
-            } else {
-                container.innerHTML = `<div class="msg user">${content}</div>`;
-            }
-            
+            container.innerHTML = `<div class="msg ${type}">${content}</div>`;
             flow.appendChild(container);
             flow.scrollTop = flow.scrollHeight;
         }
 
         function saveChat(content, type) {
-            let history = JSON.parse(localStorage.getItem('arese_v2.5_gh') || "[]");
+            let history = JSON.parse(localStorage.getItem('arese_v2.5_history') || "[]");
             history.push({content, type});
-            localStorage.setItem('arese_v2.5_gh', JSON.stringify(history));
+            localStorage.setItem('arese_v2.5_history', JSON.stringify(history.slice(-20)));
         }
 
         function loadChat() {
-            let history = JSON.parse(localStorage.getItem('arese_v2.5_gh') || "[]");
-            if(history.length === 0) {
-                appendMsg("System Online. How can I assist you today? 🦾", "ai");
-            } else {
-                history.forEach(m => appendMsg(m.content, m.type));
-            }
+            let history = JSON.parse(localStorage.getItem('arese_v2.5_history') || "[]");
+            if(history.length === 0) { appendMsg("System Online. Ready for commands. 🦾", "ai"); }
+            else { history.forEach(m => appendMsg(m.content, m.type)); }
         }
-
-        document.getElementById('user-input').addEventListener('input', function() {
-            this.style.height = '48px';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
     </script>
 </body>
 </html>
