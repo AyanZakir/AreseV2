@@ -9,46 +9,46 @@
     <style>
         :root { --blue: #00d2ff; --bg: #0b0b0b; --glass: rgba(255,255,255,0.08); }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
-        body { margin: 0; background: var(--bg); color: #fff; height: 100vh; overflow: hidden; display: flex; }
+        
+        /* FIX SCREEN CORRUPTION */
+        html, body { margin: 0; padding: 0; background: var(--bg); color: #fff; height: 100%; width: 100vw; overflow: hidden; display: flex; }
 
-        /* SIDEBAR & HISTORY */
-        #sidebar { width: 280px; background: #080808; border-right: 1px solid #151515; position: fixed; left: -280px; height: 100%; transition: 0.3s ease; z-index: 1000; padding: 20px; display: flex; flex-direction: column; }
+        /* SIDEBAR */
+        #sidebar { width: 280px; background: #080808; border-right: 1px solid #151515; position: fixed; left: -280px; height: 100%; transition: 0.3s ease; z-index: 1000; padding: 25px; display: flex; flex-direction: column; }
         #sidebar.open { left: 0; box-shadow: 10px 0 50px #000; }
         .hist-item { display: flex; justify-content: space-between; align-items: center; padding: 12px; background: #111; border: 1px solid #222; border-radius: 10px; margin-bottom: 8px; font-size: 13px; cursor: pointer; }
-        .del-btn { color: #ff4d4d; padding: 5px; }
 
-        /* MAIN APP */
-        #app { flex: 1; display: flex; flex-direction: column; width: 100%; position: relative; }
+        /* LAYOUT */
+        #app { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; width: 100%; }
         #header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid #151515; }
         
-        /* CHAT FLOW & LOGO LOADING */
+        /* MESSAGES & LOGO LOADING */
         #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .msg-container { display: flex; width: 100%; gap: 12px; align-items: flex-start; }
-        .user-side { justify-content: flex-end; }
+        .msg-container { display: flex; width: 100%; gap: 12px; }
         .ai-side { justify-content: flex-start; }
-        
+        .user-side { justify-content: flex-end; }
+
         .ai-avatar { position: relative; width: 35px; height: 35px; flex-shrink: 0; }
         .ring { position: absolute; width: 100%; height: 100%; border: 2px solid transparent; border-top: 2px solid var(--blue); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
         .msg-logo { width: 100%; height: 100%; border-radius: 50%; border: 1px solid #333; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
 
-        .msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; position: relative; }
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; position: relative; word-wrap: break-word; }
         .ai { background: var(--glass); border: 1px solid var(--blue); color: var(--blue); border-top-left-radius: 2px; }
         .user { background: #222; border: 1px solid #333; border-top-right-radius: 2px; }
-        .watermark { display: block; font-size: 9px; margin-top: 6px; opacity: 0.5; font-weight: 900; }
+        .watermark { display: block; font-size: 9px; margin-top: 6px; opacity: 0.5; font-weight: 900; text-align: right; }
 
-        /* CONTROLS */
-        .controls { padding: 15px 20px 30px; background: #050505; border-top: 1px solid #111; position: relative; }
-        #media-tray { position: absolute; bottom: 110px; left: 20px; background: #151515; border: 1px solid #333; border-radius: 15px; display: none; flex-direction: column; padding: 8px; width: 160px; z-index: 50; }
-        .tray-item { padding: 10px; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 10px; }
-        
-        .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 15px; }
-        .mode-btn { background: #111; border: 1px solid #222; color: #555; padding: 6px 16px; border-radius: 20px; font-size: 11px; cursor: pointer; font-weight: bold; }
-        .mode-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(0,210,255,0.1); }
+        /* IMAGE FIT */
+        .gen-img { width: 100%; height: auto; border-radius: 12px; margin-top: 10px; display: block; border: 1px solid var(--blue); }
 
+        /* INPUT */
+        .controls { padding: 15px 20px 30px; background: #050505; border-top: 1px solid #111; }
+        .modes { display: flex; gap: 8px; justify-content: center; margin-bottom: 12px; }
+        .mode-btn { background: #111; border: 1px solid #222; color: #555; padding: 6px 14px; border-radius: 20px; font-size: 11px; cursor: pointer; }
+        .mode-btn.active { border-color: var(--blue); color: var(--blue); }
         .bar { display: flex; gap: 12px; align-items: center; background: #111; padding: 5px 15px; border-radius: 30px; border: 1px solid #222; }
-        textarea { flex: 1; background: transparent; border: none; color: #fff; outline: none; resize: none; font-size: 16px; padding: 8px 0; }
-        .send-btn { background: var(--blue); border: none; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        textarea { flex: 1; background: transparent; border: none; color: #fff; outline: none; resize: none; font-size: 16px; }
+        .send-btn { background: var(--blue); border: none; width: 35px; height: 35px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
@@ -56,37 +56,30 @@
     <div id="sidebar">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <b style="color:var(--blue);">HISTORY</b>
-            <i data-lucide="x" onclick="toggleSidebar()" style="cursor:pointer;"></i>
+            <i data-lucide="x" onclick="toggleSidebar()"></i>
         </div>
-        <button onclick="newChat()" style="width:100%; padding:12px; background:var(--blue); border:none; border-radius:12px; font-weight:bold; margin-bottom:15px; cursor:pointer;">+ NEW CHAT</button>
         <div id="hist-list"></div>
     </div>
 
     <div id="app">
         <div id="header">
             <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-            <div style="font-weight:900; color:var(--blue); letter-spacing:1px;">ARESE v2.5</div>
+            <div style="font-weight:900; color:var(--blue);">ARESE v2.5</div>
             <div style="width:24px;"></div>
         </div>
 
         <div id="chat-flow"></div>
 
         <div class="controls">
-            <div id="media-tray">
-                <div class="tray-item" onclick="toggleTray()"><i data-lucide="camera" style="width:16px;"></i> Camera</div>
-                <div class="tray-item" onclick="toggleTray()"><i data-lucide="image" style="width:16px;"></i> Gallery</div>
-            </div>
-
             <div class="modes">
                 <button id="m-fast" class="mode-btn active" onclick="setMode('fast')">FAST</button>
                 <button id="m-think" class="mode-btn" onclick="setMode('think')">THINK</button>
                 <button id="m-pro" class="mode-btn" onclick="setMode('pro')">PRO</button>
             </div>
-
             <div class="bar">
-                <i data-lucide="plus" onclick="toggleTray()" style="color:#666; cursor:pointer;"></i>
-                <textarea id="user-input" placeholder="Message Arese..." rows="1"></textarea>
-                <button class="send-btn" onclick="execute()"><i data-lucide="arrow-up" style="width:20px;"></i></button>
+                <i data-lucide="plus" style="color:#666;"></i>
+                <textarea id="user-input" placeholder="Draw a cyberpunk city..." rows="1"></textarea>
+                <button class="send-btn" onclick="execute()"><i data-lucide="arrow-up" style="width:18px;"></i></button>
             </div>
         </div>
     </div>
@@ -94,120 +87,75 @@
     <script>
         let currentMode = 'fast';
         const GROQ_KEY = "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";
+        const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75";
 
-        window.onload = () => { lucide.createIcons(); loadHistory(); newChat(); };
+        window.onload = () => { lucide.createIcons(); appendMsg("Ready to generate. 🦾", "ai"); };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function toggleTray() { 
-            const tray = document.getElementById('media-tray');
-            tray.style.display = (tray.style.display === "flex") ? "none" : "flex"; 
-        }
-        
-        function setMode(m) {
-            currentMode = m;
-            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+        function setMode(m) { 
+            currentMode = m; 
+            document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
             document.getElementById('m-'+m).classList.add('active');
         }
 
         async function execute() {
             const input = document.getElementById('user-input');
-            const prompt = input.value.trim();
-            if(!prompt) return;
+            const val = input.value.trim();
+            if(!val) return;
 
-            appendMsg(prompt, 'user');
+            appendMsg(val, 'user');
             input.value = "";
-            
+
             const aiId = "ai-" + Date.now();
             const ringId = "ring-" + Date.now();
             appendMsg(`<span id="${aiId}">...</span>`, 'ai', ringId);
-            
-            // Start Loading Ring
             document.getElementById(ringId).style.display = 'block';
 
+            if(val.toLowerCase().includes("draw") || val.toLowerCase().includes("generate")) {
+                await generateImg(val, aiId, ringId);
+            } else {
+                await fetchAI(val, aiId, ringId);
+            }
+        }
+
+        async function generateImg(prompt, aiId, ringId) {
+            try {
+                const res = await fetch("https://fal.run/fal-ai/flux/schnell", {
+                    method: "POST",
+                    headers: { "Authorization": `Key ${FAL_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                const data = await res.json();
+                document.getElementById(ringId).style.display = 'none';
+                document.getElementById(aiId).innerHTML = `<img src="${data.images[0].url}" class="gen-img">`;
+            } catch (e) { document.getElementById(aiId).innerText = "Vision Error. ⚠️"; }
+        }
+
+        async function fetchAI(prompt, aiId, ringId) {
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        model: currentMode === 'fast' ? "llama-3.1-8b-instant" : "llama-3.3-70b-versatile", 
-                        messages: [{role: "user", content: prompt}] 
-                    })
+                    body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role:"user", content:prompt}] })
                 });
                 const data = await res.json();
-                document.getElementById(ringId).style.display = 'none'; // Stop Loading
-                
-                const reply = data.choices[0].message.content;
-                document.getElementById(aiId).innerText = "";
-                new Typed(`#${aiId}`, { strings: [reply], typeSpeed: 20, showCursor: false });
-                saveHistory(prompt);
-            } catch (e) {
                 document.getElementById(ringId).style.display = 'none';
-                document.getElementById(aiId).innerText = "Link failed. ⚠️";
-            }
+                new Typed(`#${aiId}`, { strings: [data.choices[0].message.content], typeSpeed: 20, showCursor: false });
+            } catch (e) { document.getElementById(aiId).innerText = "Link failed."; }
         }
 
         function appendMsg(content, type, ringId = "") {
             const flow = document.getElementById('chat-flow');
             const div = document.createElement('div');
             div.className = `msg-container ${type}-side`;
-
             if(type === 'ai') {
-                div.innerHTML = `
-                    <div class="ai-avatar">
-                        <div class="ring" id="${ringId}"></div>
-                        <img src="https://i.ibb.co/vzY8M7m/arese-logo.png" class="msg-logo">
-                    </div>
-                    <div class="msg ai">
-                        ${content}
-                        <span class="watermark">Arese OS ✓</span>
-                    </div>
-                `;
+                div.innerHTML = `<div class="ai-avatar"><div class="ring" id="${ringId}"></div><img src="https://i.ibb.co/vzY8M7m/arese-logo.png" class="msg-logo"></div>
+                <div class="msg ai">${content}<span class="watermark">Arese OS ✓</span></div>`;
             } else {
                 div.innerHTML = `<div class="msg user">${content}</div>`;
             }
-
             flow.appendChild(div);
             flow.scrollTop = flow.scrollHeight;
-        }
-
-        function saveHistory(p) {
-            let h = JSON.parse(localStorage.getItem('arese_h') || "[]");
-            h.unshift(p);
-            localStorage.setItem('arese_h', JSON.stringify(h.slice(0, 15)));
-            loadHistory();
-        }
-
-        function loadHistory() {
-            const list = document.getElementById('hist-list');
-            list.innerHTML = "";
-            let h = JSON.parse(localStorage.getItem('arese_h') || "[]");
-            h.forEach((text, i) => {
-                const item = document.createElement('div');
-                item.className = "hist-item";
-                item.innerHTML = `<span onclick="restore('${text}')">${text.substring(0, 20)}...</span>
-                                  <i data-lucide="trash-2" class="del-btn" onclick="deleteH(${i})"></i>`;
-                list.appendChild(item);
-            });
-            lucide.createIcons();
-        }
-
-        function deleteH(i) {
-            let h = JSON.parse(localStorage.getItem('arese_h') || "[]");
-            h.splice(i, 1);
-            localStorage.setItem('arese_h', JSON.stringify(h));
-            loadHistory();
-        }
-
-        function restore(text) {
-            document.getElementById('chat-flow').innerHTML = "";
-            appendMsg(text, 'user');
-            toggleSidebar();
-        }
-
-        function newChat() {
-            document.getElementById('chat-flow').innerHTML = "";
-            appendMsg("Arese System Online. 🦾🥀🔒", "ai", "init-ring");
-            if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
     </script>
 </body>
