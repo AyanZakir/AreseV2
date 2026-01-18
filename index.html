@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese OS v2.9</title>
+    <title>Arese OS v2.5</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
         :root { --blue: #00d2ff; --bg: #0b0b0b; --glass: rgba(0, 210, 255, 0.05); --border: #1f1f1f; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { height: 100dvh; width: 100vw; margin: 0; background: var(--bg); color: #fff; overflow: hidden; display: flex; }
 
         /* SIDEBAR */
         #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; height: 100%; transition: 0.3s ease; z-index: 2000; padding: 20px; }
         #sidebar.open { left: 0; box-shadow: 20px 0 50px #000; }
-        .chat-entry { padding: 12px; background: #111; border: 1px solid #222; border-radius: 10px; margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
 
         /* MAIN APP */
         #app { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
@@ -35,49 +34,52 @@
         /* CONTROLS (THE SWITCHER) */
         .controls { padding: 10px 15px 35px; background: #080808; border-top: 1px solid var(--border); position: relative; }
         .bar { display: flex; gap: 10px; align-items: center; background: #151515; padding: 6px 15px; border-radius: 30px; border: 1px solid #222; }
-        textarea { flex: 1; background: transparent; border: none; color: #fff; outline: none; resize: none; font-size: 16px; padding: 8px 0; max-height: 150px; }
+        textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; font-size: 16px; padding: 8px 0; max-height: 150px; }
         
-        /* THE DYNAMIC BUTTON */
-        #action-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: 0.3s; }
+        #action-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
         .btn-send { background: var(--blue); }
-        .btn-stop { background: #ff4b2b; animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0.4); } 70% { box-shadow: 0 0 0 10px rgba(255, 75, 43, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 75, 43, 0); } }
+        .btn-stop { background: #ff4b2b; box-shadow: 0 0 15px rgba(255, 75, 43, 0.3); }
 
         /* PLUS MENU */
-        #plus-menu { position: absolute; bottom: 85px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 180px; z-index: 3000; }
+        #plus-menu { position: absolute; bottom: 85px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 190px; z-index: 3000; overflow: hidden; box-shadow: 0 10px 30px #000; }
         .menu-item { padding: 14px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-bottom: 1px solid #222; cursor: pointer; color: #ccc; }
+        .menu-item:hover { background: #222; }
     </style>
 </head>
 <body>
 
-    <input type="file" id="media-capture" hidden onchange="handleFile(this)">
+    <input type="file" id="h-camera" hidden capture="environment" accept="image/*" onchange="h_upload(this, 'Photo')">
+    <input type="file" id="h-gallery" hidden accept="image/*" onchange="h_upload(this, 'Gallery Image')">
+    <input type="file" id="h-video" hidden accept="video/*" onchange="h_upload(this, 'Video')">
+    <input type="file" id="h-audio" hidden accept="audio/*" onchange="h_upload(this, 'Audio Clip')">
+    <input type="file" id="h-docs" hidden accept=".pdf,.doc,.txt" onchange="h_upload(this, 'Document')">
 
     <div id="sidebar">
-        <b style="color:var(--blue); font-size:22px;">ARESE HISTORY</b>
+        <b style="color:var(--blue); font-size:22px;">ARESE v2.5</b>
         <div id="chat-list" style="margin-top:20px;"></div>
     </div>
 
     <div id="app">
         <div id="header">
             <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-            <b style="color:var(--blue); font-size:14px;">ARESE v2.9</b>
-            <i data-lucide="plus-circle" style="opacity:0;"></i>
+            <b style="color:var(--blue); font-size:14px;">ARESE OS v2.5</b>
+            <i data-lucide="shield" style="color:#2ecc71; width:18px;"></i>
         </div>
 
         <div id="chat-flow"></div>
 
         <div id="plus-menu">
-            <div class="menu-item" onclick="triggerHardware('image/*', true)"><i data-lucide="camera" style="color:red;"></i> Camera</div>
-            <div class="menu-item" onclick="triggerHardware('image/*', false)"><i data-lucide="image" style="color:green;"></i> Gallery</div>
-            <div class="menu-item" onclick="triggerHardware('video/*', false)"><i data-lucide="video" style="color:blue;"></i> Video</div>
-            <div class="menu-item" onclick="triggerHardware('application/pdf,text/plain', false)"><i data-lucide="file-text" style="color:purple;"></i> Document</div>
-            <div class="media-item" onclick="triggerHardware('audio/*', false)" style="padding:14px; display:flex; align-items:center; gap:12px;"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
+            <div class="menu-item" onclick="openH('h-camera')"><i data-lucide="camera" style="color:red;"></i> Camera</div>
+            <div class="menu-item" onclick="openH('h-gallery')"><i data-lucide="image" style="color:green;"></i> Pictures</div>
+            <div class="menu-item" onclick="openH('h-video')"><i data-lucide="video" style="color:blue;"></i> Videos</div>
+            <div class="menu-item" onclick="openH('h-audio')"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
+            <div class="menu-item" onclick="openH('h-docs')"><i data-lucide="file-text" style="color:purple;"></i> Documents</div>
         </div>
 
         <div class="controls">
             <div class="bar">
                 <i data-lucide="plus" onclick="togglePlus()" style="cursor:pointer; color:#777;"></i>
-                <textarea id="user-input" placeholder="Ask or Draw..." rows="1"></textarea>
+                <textarea id="user-input" placeholder="Message Arese..." rows="1"></textarea>
                 
                 <button id="action-btn" class="btn-send" onclick="handleAction()">
                     <i id="btn-icon" data-lucide="arrow-up" style="width:20px; color:#000;"></i>
@@ -95,6 +97,11 @@
         const GROQ_KEY = "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";
         const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75";
 
+        // --- THE SYSTEM SAFETY CORE ---
+        const CORE_PROMPT = "You are Arese OS v2.5. You are an AI interface, not a chatbot. " +
+        "SAFETY: Strictly refuse anything related to suicide, self-harm, 18+ content, or black magic rituals. " +
+        "TONE: Professional, witty, and helpful. Keep responses concise to prevent system lag.";
+
         window.onload = () => { lucide.createIcons(); newChat(); };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
@@ -103,30 +110,20 @@
             m.style.display = m.style.display === "flex" ? "none" : "flex";
         }
 
-        // --- HARDWARE INTEGRATION ---
-        function triggerHardware(type, useCamera) {
-            const input = document.getElementById('media-capture');
-            input.accept = type;
-            if (useCamera) input.setAttribute("capture", "environment");
-            else input.removeAttribute("capture");
-            input.click();
-            togglePlus();
-        }
-
-        function handleFile(input) {
+        // --- HARDWARE BRIDGE ---
+        function openH(id) { document.getElementById(id).click(); togglePlus(); }
+        
+        function h_upload(input, type) {
             if (input.files[0]) {
-                appendMsg(`File Attached: ${input.files[0].name}`, 'user');
-                setTimeout(() => appendMsg("System received your file. Analyzing data... 📂", 'ai', 'f-'+Date.now()), 500);
+                appendMsg(`${type} Linked: ${input.files[0].name}`, 'user');
+                setTimeout(() => appendMsg(`System has processed the ${type}. Storage updated. 📂`, 'ai', 'f-'+Date.now()), 600);
             }
         }
 
-        // --- DYNAMIC BUTTON LOGIC ---
+        // --- INTERFACE LOCK LOGIC ---
         function handleAction() {
-            if (isProcessing) {
-                stopResponse();
-            } else {
-                handleSend();
-            }
+            if (isProcessing) stopResponse();
+            else handleSend();
         }
 
         function setProcessing(state) {
@@ -143,6 +140,7 @@
                 btn.className = "btn-send";
                 icon.setAttribute("data-lucide", "arrow-up");
                 input.disabled = false;
+                input.focus();
             }
             lucide.createIcons();
         }
@@ -151,7 +149,7 @@
             if (abortController) abortController.abort();
             if (typedInstance) typedInstance.destroy();
             setProcessing(false);
-            appendMsg("[System Process Terminated by User]", 'ai', 'stop-'+Date.now());
+            appendMsg("[Core Response Halted]", 'ai', 'stop-'+Date.now());
         }
 
         async function handleSend() {
@@ -168,18 +166,17 @@
             appendMsg(`<span id="${aiId}">Connecting to Core...</span>`, 'ai', ringId);
             document.getElementById(ringId).style.display = "block";
 
-            if (val.toLowerCase().startsWith("draw") || val.toLowerCase().startsWith("generate")) {
-                await runVision(val, aiId, ringId);
-            } else {
-                await runChat(val, aiId, ringId);
-            }
+            const triggerImg = val.toLowerCase().startsWith("draw") || val.toLowerCase().startsWith("generate");
+
+            if (triggerImg) await runVision(val, aiId, ringId);
+            else await runChat(val, aiId, ringId);
         }
 
         async function runChat(prompt, id, ring) {
             abortController = new AbortController();
             try {
-                // FIX CORE OVERLOAD: Only send the last 6 messages to stay under memory limits
-                const limitedHistory = chatHistory.slice(-6);
+                // Prevent memory overload by only sending last 8 messages
+                const historySlice = chatHistory.slice(-8);
                 
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
@@ -188,7 +185,7 @@
                     body: JSON.stringify({ 
                         model: "llama-3.3-70b-versatile",
                         max_tokens: 1024,
-                        messages: [{role: "system", content: "You are Arese OS v2.9. Be helpful and brief."}, ...limitedHistory, {role: "user", content: prompt}] 
+                        messages: [{role: "system", content: CORE_PROMPT}, ...historySlice, {role: "user", content: prompt}] 
                     })
                 });
                 const data = await res.json();
@@ -199,7 +196,7 @@
                 
                 typedInstance = new Typed(`#${id}`, { 
                     strings: [reply], 
-                    typeSpeed: 10, 
+                    typeSpeed: 12, 
                     showCursor: false, 
                     onComplete: () => setProcessing(false) 
                 });
@@ -223,10 +220,10 @@
                 });
                 const data = await res.json();
                 document.getElementById(ring).style.display = "none";
-                document.getElementById(id).innerHTML = `Visualization complete. 🎨<br><img src="${data.images[0].url}" style="width:100%; border-radius:10px; margin-top:10px;">`;
+                document.getElementById(id).innerHTML = `Vision Rendered. 🎨<br><img src="${data.images[0].url}" style="width:100%; border-radius:15px; margin-top:10px; border:1px solid #333;">`;
                 setProcessing(false);
             } catch (e) {
-                document.getElementById(id).innerText = "Vision Error.";
+                document.getElementById(id).innerText = "Vision Module Error.";
                 setProcessing(false);
             }
         }
@@ -245,7 +242,7 @@
         function newChat() {
             chatHistory = [];
             document.getElementById('chat-flow').innerHTML = "";
-            appendMsg("Arese OS v2.9 Online. Hardware Bridge active. 🦾🥀🔒", "ai", "init-ring");
+            appendMsg("Arese OS v2.5 Online. All systems green. 🦾🥀🔒", "ai", "init-ring");
         }
     </script>
 </body>
