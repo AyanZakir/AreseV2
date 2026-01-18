@@ -1,49 +1,90 @@
-/* vision.js - Arese OS v2.5 Core Engine */
+/**
+ * Arese OS v2.5 - Vision & Imaging Engine
+ * Handles: Image Generation, Camera Access, and Media Processing
+ */
 
-// Your Fal.ai Key for high-fidelity images
-const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75"; 
+const VisionEngine = {
+    config: {
+        falKey: "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75",
+        status: "Online",
+        watermark: "Arese OS ✓"
+    },
 
-async function generateImage(prompt, id) {
-    const bubble = document.getElementById(id);
-    const loader = document.getElementById('logo-loader');
-    
-    // 1. Show the loading bar on the logo
-    if(loader) loader.style.display = 'block';
+    // 1. GENERATE IMAGE (The fix for your Vision Error)
+    async generate(prompt, outputId, ringId) {
+        const target = document.getElementById(outputId);
+        const ring = document.getElementById(ringId);
 
-    try {
-        const response = await fetch("https://fal.run/fal-ai/flux/schnell", {
-            method: "POST",
-            headers: {
-                "Authorization": `Key ${FAL_KEY}`,
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({ 
-                prompt: prompt, 
-                image_size: "square_hd" 
-            })
-        });
+        // Set "Analyzing..." state
+        target.innerText = "Analyzing...";
+        ring.style.display = "block";
 
-        const data = await response.json();
-        const imageUrl = data.images[0].url;
+        try {
+            const response = await fetch("https://fal.run/fal-ai/flux/schnell", {
+                method: "POST",
+                headers: { 
+                    "Authorization": `Key ${this.config.falKey}`, 
+                    "Content-Type": "application/json" 
+                },
+                body: JSON.stringify({ 
+                    prompt: `Professional high-quality render: ${prompt}`,
+                    image_size: "square" 
+                })
+            });
 
-        // 2. Hide loading bar
-        if(loader) loader.style.display = 'none';
+            if (!response.ok) throw new Error("API_REJECTED");
 
-        // 3. Render with Watermark and perfect fit
-        bubble.innerHTML = `
-            <div style="width:100%; overflow:hidden;">
-                <img src="${imageUrl}" 
-                     style="width:100%; height:auto; border-radius:12px; border:1px solid var(--blue); margin-top:10px; display:block;" 
-                     onclick="window.open('${imageUrl}')">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
-                    <span style="font-size:9px; color:var(--blue); opacity:0.6; font-weight:900;">Arese OS ✓</span>
-                    <button onclick="navigator.share({url:'${imageUrl}'})" style="background:transparent; border:none; color:#fff; font-size:10px; cursor:pointer;">SHARE</button>
+            const data = await response.json();
+            const imageUrl = data.images[0].url;
+
+            // Render with Save/Share buttons
+            ring.style.display = "none";
+            target.innerHTML = `
+                I've visualized that for you! 🎨
+                <div class="img-card" style="width:100%; border-radius:15px; border:1px solid #00d2ff; margin-top:10px; overflow:hidden;">
+                    <img src="${imageUrl}" style="width:100%; display:block;">
+                    <div class="img-footer" style="display:flex; background:#111; padding:10px; gap:10px;">
+                        <button onclick="window.open('${imageUrl}')" class="img-btn-style"><i data-lucide="download"></i> SAVE</button>
+                        <button onclick="navigator.share({url:'${imageUrl}'})" class="img-btn-style"><i data-lucide="share-2"></i> SHARE</button>
+                    </div>
                 </div>
-            </div>
-        `;
+                <span class="watermark" style="color:#00d2ff; font-size:9px; font-weight:800;">${this.config.watermark}</span>
+            `;
+            
+            // Save to recent creations gallery
+            this.addToGallery(imageUrl);
+            lucide.createIcons();
 
-    } catch (error) {
-        if(loader) loader.style.display = 'none';
-        bubble.innerText = "Vision Engine timed out. Check credits. ⚠️";
+        } catch (error) {
+            console.error("Vision Error:", error);
+            ring.style.display = "none";
+            target.innerText = "Vision Engine Error. Ensure API keys are active. ⚠️";
+        }
+    },
+
+    // 2. CAMERA/PHOTO HANDLER (Fixes the + Menu errors)
+    async openMedia(type) {
+        // This triggers the device's native file/camera picker
+        const input = document.createElement('input');
+        input.type = 'file';
+        
+        if (type === 'Camera') input.capture = 'environment';
+        if (type === 'Photos' || type === 'Video') input.accept = 'image/*,video/*';
+        if (type === 'Document') input.accept = '.pdf,.doc,.txt';
+        if (type === 'Audio') input.accept = 'audio/*';
+
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            appendMsg(`Arese received: ${file.name} (Ready for processing)`, 'ai');
+        };
+        input.click();
+    },
+
+    // 3. GALLERY SYSTEM
+    addToGallery(url) {
+        let imgs = JSON.parse(localStorage.getItem('arese_v2_imgs') || "[]");
+        imgs.unshift(url);
+        localStorage.setItem('arese_v2_imgs', JSON.stringify(imgs.slice(0, 6)));
+        if (typeof loadHistory === "function") loadHistory();
     }
-}
+};
