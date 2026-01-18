@@ -7,13 +7,22 @@
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
-        :root { --blue: #00d2ff; --bg: #0b0b0b; --glass: rgba(0, 210, 255, 0.05); --border: #1f1f1f; }
+        :root { --blue: #00d2ff; --bg: #0b0b0b; --glass: rgba(0, 210, 255, 0.1); --border: #1f1f1f; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
         html, body { height: 100dvh; width: 100vw; margin: 0; background: var(--bg); color: #fff; overflow: hidden; display: flex; }
 
-        /* SIDEBAR */
-        #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; height: 100%; transition: 0.3s ease; z-index: 2000; padding: 20px; }
-        #sidebar.open { left: 0; box-shadow: 20px 0 50px #000; }
+        /* SCROLLBAR STYLING */
+        #chat-flow::-webkit-scrollbar { width: 6px; }
+        #chat-flow::-webkit-scrollbar-track { background: #080808; }
+        #chat-flow::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
+
+        /* SIDEBAR & HISTORY */
+        #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; height: 100%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
+        #sidebar.open { left: 0; box-shadow: 20px 0 60px #000; }
+        .new-chat-btn { width: 100%; padding: 14px; background: var(--blue); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .history-item { padding: 12px; background: #111; border: 1px solid #222; border-radius: 10px; font-size: 13px; color: #888; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
+        .history-item:hover { border-color: var(--blue); color: #fff; }
 
         /* MAIN APP */
         #app { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
@@ -26,63 +35,70 @@
         .ai-avatar { position: relative; width: 38px; height: 38px; flex-shrink: 0; }
         .ring { position: absolute; width: 100%; height: 100%; border: 2px solid transparent; border-top: 2px solid var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .msg-logo { width: 100%; height: 100%; border-radius: 50%; background: #000; border: 1px solid #333; }
         .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
-        .ai { background: var(--glass); border: 1px solid rgba(0,210,255,0.3); color: var(--blue); border-top-left-radius: 4px; }
+        .ai { background: var(--glass); border: 1px solid rgba(0,210,255,0.2); color: var(--blue); border-top-left-radius: 4px; }
         .user { background: #1a1a1a; border: 1px solid #333; border-top-right-radius: 4px; color: #eee; }
 
-        /* CONTROLS (THE SWITCHER) */
+        /* CONTROLS */
         .controls { padding: 10px 15px 35px; background: #080808; border-top: 1px solid var(--border); position: relative; }
         .bar { display: flex; gap: 10px; align-items: center; background: #151515; padding: 6px 15px; border-radius: 30px; border: 1px solid #222; }
         textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; font-size: 16px; padding: 8px 0; max-height: 150px; }
         
-        #action-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
+        #action-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: 0.3s; }
         .btn-send { background: var(--blue); }
-        .btn-stop { background: #ff4b2b; box-shadow: 0 0 15px rgba(255, 75, 43, 0.3); }
+        .btn-stop { background: #ff4b2b; }
 
-        /* PLUS MENU */
-        #plus-menu { position: absolute; bottom: 85px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 190px; z-index: 3000; overflow: hidden; box-shadow: 0 10px 30px #000; }
+        /* MENUS */
+        .pop-menu { position: absolute; bottom: 85px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 170px; z-index: 3000; box-shadow: 0 10px 30px #000; overflow: hidden; }
         .menu-item { padding: 14px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-bottom: 1px solid #222; cursor: pointer; color: #ccc; }
-        .menu-item:hover { background: #222; }
+        .menu-item:hover { background: #222; color: #fff; }
     </style>
 </head>
 <body>
 
-    <input type="file" id="h-camera" hidden capture="environment" accept="image/*" onchange="h_upload(this, 'Photo')">
-    <input type="file" id="h-gallery" hidden accept="image/*" onchange="h_upload(this, 'Gallery Image')">
-    <input type="file" id="h-video" hidden accept="video/*" onchange="h_upload(this, 'Video')">
-    <input type="file" id="h-audio" hidden accept="audio/*" onchange="h_upload(this, 'Audio Clip')">
-    <input type="file" id="h-docs" hidden accept=".pdf,.doc,.txt" onchange="h_upload(this, 'Document')">
+    <input type="file" id="h-input" hidden onchange="h_upload(this)">
 
     <div id="sidebar">
-        <b style="color:var(--blue); font-size:22px;">ARESE v2.5</b>
-        <div id="chat-list" style="margin-top:20px;"></div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <b style="color:var(--blue); font-size:22px;">ARESE LOGS</b>
+            <i data-lucide="x" onclick="toggleSidebar()" style="cursor:pointer;"></i>
+        </div>
+        <button class="new-chat-btn" onclick="startNewSession()">
+            <i data-lucide="plus"></i> New Chat
+        </button>
+        <div id="history-list" class="history-list"></div>
     </div>
 
     <div id="app">
         <div id="header">
             <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-            <b style="color:var(--blue); font-size:14px;">ARESE OS v2.5</b>
-            <i data-lucide="shield" style="color:#2ecc71; width:18px;"></i>
+            <b style="color:var(--blue); font-size:14px; letter-spacing:1px;">ARESE v2.5</b>
+            <div id="mode-display" style="color:#555; font-size:11px; font-weight:bold;">FAST MODE</div>
         </div>
 
         <div id="chat-flow"></div>
 
-        <div id="plus-menu">
-            <div class="menu-item" onclick="openH('h-camera')"><i data-lucide="camera" style="color:red;"></i> Camera</div>
-            <div class="menu-item" onclick="openH('h-gallery')"><i data-lucide="image" style="color:green;"></i> Pictures</div>
-            <div class="menu-item" onclick="openH('h-video')"><i data-lucide="video" style="color:blue;"></i> Videos</div>
-            <div class="menu-item" onclick="openH('h-audio')"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
-            <div class="menu-item" onclick="openH('h-docs')"><i data-lucide="file-text" style="color:purple;"></i> Documents</div>
+        <div id="plus-menu" class="pop-menu" style="left:20px;">
+            <div class="menu-item" onclick="triggerH('image/*', true)"><i data-lucide="camera" style="color:red;"></i> Camera</div>
+            <div class="menu-item" onclick="triggerH('image/*', false)"><i data-lucide="image" style="color:green;"></i> Gallery</div>
+            <div class="menu-item" onclick="triggerH('video/*', false)"><i data-lucide="video" style="color:blue;"></i> Video</div>
+            <div class="menu-item" onclick="triggerH('audio/*', false)"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
+            <div class="menu-item" onclick="triggerH('*/*', false)"><i data-lucide="file-text" style="color:purple;"></i> Documents</div>
+        </div>
+
+        <div id="mode-menu" class="pop-menu" style="right:60px;">
+            <div class="menu-item" onclick="setMode('Fast')">Fast Mode</div>
+            <div class="menu-item" onclick="setMode('Think')">Think Mode</div>
+            <div class="menu-item" onclick="setMode('Pro')">Pro Mode</div>
         </div>
 
         <div class="controls">
             <div class="bar">
-                <i data-lucide="plus" onclick="togglePlus()" style="cursor:pointer; color:#777;"></i>
-                <textarea id="user-input" placeholder="Message Arese..." rows="1"></textarea>
-                
+                <i data-lucide="plus" onclick="togglePop('plus-menu')" style="cursor:pointer; color:#777;"></i>
+                <textarea id="user-input" placeholder="Ask Arese..." rows="1"></textarea>
+                <div id="mode-btn" style="color:var(--blue); font-size:10px; font-weight:900; cursor:pointer;" onclick="togglePop('mode-menu')">FAST</div>
                 <button id="action-btn" class="btn-send" onclick="handleAction()">
-                    <i id="btn-icon" data-lucide="arrow-up" style="width:20px; color:#000;"></i>
+                    <i id="btn-icon" data-lucide="arrow-up" style="width:18px; color:#000;"></i>
                 </button>
             </div>
         </div>
@@ -90,6 +106,7 @@
 
     <script>
         let isProcessing = false;
+        let currentMode = 'Fast';
         let chatHistory = [];
         let typedInstance = null;
         let abortController = null;
@@ -97,153 +114,173 @@
         const GROQ_KEY = "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";
         const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75";
 
-        // --- THE SYSTEM SAFETY CORE ---
-        const CORE_PROMPT = "You are Arese OS v2.5. You are an AI interface, not a chatbot. " +
-        "SAFETY: Strictly refuse anything related to suicide, self-harm, 18+ content, or black magic rituals. " +
-        "TONE: Professional, witty, and helpful. Keep responses concise to prevent system lag.";
+        const CORE_PROMPT = "You are Arese OS v2.5. Developed by Muhammad-Ayan-Khan. " +
+        "When asked about your developer, say: 'I was developed by Muhammad-Ayan-Khan, a genius engineer who built me at the young age of 14.' Do not provide any other personal data about him. " +
+        "If you make a mistake or if the user asks something forbidden (suicide, 18+, black magic), say: 'I am sorry, I cannot assist with that request.' " +
+        "Be witty, professional, and empathetic.";
 
-        window.onload = () => { lucide.createIcons(); newChat(); };
+        window.onload = () => { lucide.createIcons(); refreshHistory(); startNewSession(); };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function togglePlus() {
-            const m = document.getElementById('plus-menu');
-            m.style.display = m.style.display === "flex" ? "none" : "flex";
+        function togglePop(id) {
+            const el = document.getElementById(id);
+            const isVis = el.style.display === "flex";
+            document.querySelectorAll('.pop-menu').forEach(m => m.style.display = "none");
+            el.style.display = isVis ? "none" : "flex";
         }
 
-        // --- HARDWARE BRIDGE ---
-        function openH(id) { document.getElementById(id).click(); togglePlus(); }
-        
-        function h_upload(input, type) {
-            if (input.files[0]) {
-                appendMsg(`${type} Linked: ${input.files[0].name}`, 'user');
-                setTimeout(() => appendMsg(`System has processed the ${type}. Storage updated. 📂`, 'ai', 'f-'+Date.now()), 600);
+        function setMode(m) {
+            currentMode = m;
+            document.getElementById('mode-btn').innerText = m.toUpperCase();
+            document.getElementById('mode-display').innerText = m.toUpperCase() + " MODE";
+            togglePop('mode-menu');
+        }
+
+        function triggerH(acc, cam) {
+            const i = document.getElementById('h-input');
+            i.accept = acc;
+            if(cam) i.setAttribute("capture", "environment"); else i.removeAttribute("capture");
+            i.click(); togglePop('plus-menu');
+        }
+
+        function h_upload(input) {
+            if(input.files[0]) {
+                appendMsg(`File Attached: ${input.files[0].name}`, 'user');
+                setTimeout(() => appendMsg("Processing hardware data... 📂", 'ai', 'f-'+Date.now()), 600);
             }
         }
 
-        // --- INTERFACE LOCK LOGIC ---
-        function handleAction() {
-            if (isProcessing) stopResponse();
-            else handleSend();
-        }
+        function handleAction() { if(isProcessing) stopResponse(); else handleSend(); }
 
         function setProcessing(state) {
             isProcessing = state;
             const btn = document.getElementById('action-btn');
             const icon = document.getElementById('btn-icon');
             const input = document.getElementById('user-input');
-
-            if (state) {
-                btn.className = "btn-stop";
-                icon.setAttribute("data-lucide", "square");
-                input.disabled = true;
-            } else {
-                btn.className = "btn-send";
-                icon.setAttribute("data-lucide", "arrow-up");
-                input.disabled = false;
-                input.focus();
-            }
+            btn.className = state ? "btn-stop" : "btn-send";
+            icon.setAttribute("data-lucide", state ? "square" : "arrow-up");
+            input.disabled = state;
             lucide.createIcons();
         }
 
         function stopResponse() {
-            if (abortController) abortController.abort();
-            if (typedInstance) typedInstance.destroy();
+            if(abortController) abortController.abort();
+            if(typedInstance) typedInstance.destroy();
             setProcessing(false);
-            appendMsg("[Core Response Halted]", 'ai', 'stop-'+Date.now());
+            appendMsg("Process terminated. I am sorry for the interruption.", 'ai', 'stop-'+Date.now());
         }
 
         async function handleSend() {
             const input = document.getElementById('user-input');
             const val = input.value.trim();
-            if (!val) return;
+            if(!val) return;
 
             appendMsg(val, 'user');
             input.value = "";
             setProcessing(true);
 
             const aiId = "ai-" + Date.now();
-            const ringId = "ring-" + Date.now();
-            appendMsg(`<span id="${aiId}">Connecting to Core...</span>`, 'ai', ringId);
-            document.getElementById(ringId).style.display = "block";
+            const rId = "ring-" + Date.now();
+            appendMsg(`<span id="${aiId}">Connecting to Core...</span>`, 'ai', rId);
+            document.getElementById(rId).style.display = "block";
 
-            const triggerImg = val.toLowerCase().startsWith("draw") || val.toLowerCase().startsWith("generate");
-
-            if (triggerImg) await runVision(val, aiId, ringId);
-            else await runChat(val, aiId, ringId);
+            if(val.toLowerCase().startsWith("draw")) await runVision(val, aiId, rId);
+            else await runChat(val, aiId, rId);
         }
 
         async function runChat(prompt, id, ring) {
             abortController = new AbortController();
             try {
-                // Prevent memory overload by only sending last 8 messages
-                const historySlice = chatHistory.slice(-8);
-                
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     signal: abortController.signal,
                     headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         model: "llama-3.3-70b-versatile",
-                        max_tokens: 1024,
-                        messages: [{role: "system", content: CORE_PROMPT}, ...historySlice, {role: "user", content: prompt}] 
+                        messages: [{role: "system", content: CORE_PROMPT}, ...chatHistory.slice(-6), {role: "user", content: prompt}] 
                     })
                 });
                 const data = await res.json();
                 const reply = data.choices[0].message.content;
-                
                 document.getElementById(ring).style.display = "none";
                 document.getElementById(id).innerHTML = "";
-                
-                typedInstance = new Typed(`#${id}`, { 
-                    strings: [reply], 
-                    typeSpeed: 12, 
-                    showCursor: false, 
-                    onComplete: () => setProcessing(false) 
-                });
-
+                typedInstance = new Typed(`#${id}`, { strings: [reply], typeSpeed: 12, showCursor: false, onComplete: () => { setProcessing(false); saveCurrentChat(); } });
                 chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
             } catch (e) {
-                if (e.name !== 'AbortError') {
+                if(e.name !== 'AbortError') {
                     document.getElementById(ring).style.display = "none";
-                    document.getElementById(id).innerText = "Core Overload. Connection reset. 🛠️";
+                    document.getElementById(id).innerText = "I am sorry, a core error occurred. 🛠️";
                     setProcessing(false);
                 }
             }
         }
 
-        async function runVision(prompt, id, ring) {
+        async function runVision(p, id, ring) {
             try {
                 const res = await fetch("https://fal.run/fal-ai/flux/schnell", {
                     method: "POST",
                     headers: { "Authorization": `Key ${FAL_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: prompt, image_size: "square_hd" })
+                    body: JSON.stringify({ prompt: p, image_size: "square_hd" })
                 });
-                const data = await res.json();
+                const d = await res.json();
                 document.getElementById(ring).style.display = "none";
-                document.getElementById(id).innerHTML = `Vision Rendered. 🎨<br><img src="${data.images[0].url}" style="width:100%; border-radius:15px; margin-top:10px; border:1px solid #333;">`;
+                document.getElementById(id).innerHTML = `Visualization rendered. 🎨<br><img src="${d.images[0].url}" style="width:100%; border-radius:15px; margin-top:10px;">`;
                 setProcessing(false);
-            } catch (e) {
-                document.getElementById(id).innerText = "Vision Module Error.";
-                setProcessing(false);
-            }
+            } catch (e) { setProcessing(false); }
         }
 
         function appendMsg(c, t, r = "") {
-            const flow = document.getElementById('chat-flow');
+            const f = document.getElementById('chat-flow');
             const div = document.createElement('div');
             div.className = `msg-container ${t}-side`;
-            div.innerHTML = t === 'ai' ? 
-                `<div class="ai-avatar"><div class="ring" id="${r}"></div><img src="https://i.ibb.co/vzY8M7m/arese-logo.png" class="msg-logo"></div><div class="msg ai">${c}</div>` :
-                `<div class="msg user">${c}</div>`;
-            flow.appendChild(div);
-            flow.scrollTop = flow.scrollHeight;
+            div.innerHTML = t === 'ai' ? `<div class="ai-avatar"><div class="ring" id="${r}"></div><img src="https://i.ibb.co/vzY8M7m/arese-logo.png" style="width:100%; border-radius:50%; border:1px solid #333;"></div><div class="msg ai">${c}</div>` : `<div class="msg user">${c}</div>`;
+            f.appendChild(div); f.scrollTop = f.scrollHeight;
         }
 
-        function newChat() {
+        // --- HISTORY LOGIC ---
+        function saveCurrentChat() {
+            if(chatHistory.length < 1) return;
+            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
+            const title = chatHistory[0].content.substring(0, 25);
+            logs = logs.filter(l => l.title !== title);
+            logs.unshift({ title: title, data: chatHistory });
+            localStorage.setItem('arese_logs', JSON.stringify(logs.slice(0, 15)));
+            refreshHistory();
+        }
+
+        function refreshHistory() {
+            const list = document.getElementById('history-list'); list.innerHTML = "";
+            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
+            logs.forEach((log, i) => {
+                const div = document.createElement('div'); div.className = "history-item";
+                div.innerHTML = `<span onclick="loadChat(${i})">${log.title}...</span><i data-lucide="trash" onclick="deleteChat(${i})" style="width:14px;"></i>`;
+                list.appendChild(div);
+            });
+            lucide.createIcons();
+        }
+
+        function loadChat(i) {
+            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
+            chatHistory = logs[i].data;
+            document.getElementById('chat-flow').innerHTML = "";
+            chatHistory.forEach(m => appendMsg(m.content, m.role === 'user' ? 'user' : 'ai'));
+            toggleSidebar();
+        }
+
+        function deleteChat(i) {
+            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
+            logs.splice(i, 1);
+            localStorage.setItem('arese_logs', JSON.stringify(logs));
+            refreshHistory();
+        }
+
+        function startNewSession() {
             chatHistory = [];
             document.getElementById('chat-flow').innerHTML = "";
-            appendMsg("Arese OS v2.5 Online. All systems green. 🦾🥀🔒", "ai", "init-ring");
+            appendMsg("Arese OS v2.5 Online. Creator: Muhammad-Ayan-Khan. System Green. 🦾🥀🔒", "ai", "init-ring");
+            if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
     </script>
 </body>
-</html>
+    </html>
+    
