@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese OS v2.6</title>
+    <title>Arese OS v2.7</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
@@ -11,11 +11,10 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100dvh; width: 100vw; margin: 0; background: var(--bg); color: #fff; overflow: hidden; display: flex; }
 
-        /* SIDEBAR & HISTORY */
-        #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; height: 100%; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
+        /* SIDEBAR */
+        #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; height: 100%; transition: 0.3s ease; z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
         #sidebar.open { left: 0; box-shadow: 20px 0 50px #000; }
-        .new-chat-btn { width: 100%; padding: 14px; background: var(--blue); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 25px; font-size: 14px; }
-        .hist-label { font-size: 10px; color: #444; font-weight: 900; margin: 15px 0 8px; letter-spacing: 1px; text-transform: uppercase; }
+        .new-chat-btn { width: 100%; padding: 14px; background: var(--blue); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 25px; }
         .chat-entry { padding: 12px; background: #111; border: 1px solid #222; border-radius: 10px; margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 
         /* MAIN APP */
@@ -23,83 +22,76 @@
         #header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid var(--border); }
         #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
 
-        /* MESSAGES (BIG TEXT COMPATIBLE) */
+        /* MESSAGES (FIXED FOR HUGE TEXT) */
         .msg-container { display: flex; width: 100%; gap: 12px; }
         .user-side { justify-content: flex-end; }
         .ai-avatar { position: relative; width: 38px; height: 38px; flex-shrink: 0; }
         .ring { position: absolute; width: 100%; height: 100%; border: 2px solid transparent; border-top: 2px solid var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .msg-logo { width: 100%; height: 100%; border-radius: 50%; background: #000; border: 1px solid #333; }
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.6; word-wrap: break-word; white-space: pre-wrap; }
+        .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.6; word-wrap: break-word; overflow-wrap: break-word; }
         .ai { background: var(--glass); border: 1px solid rgba(0,210,255,0.3); color: var(--blue); border-top-left-radius: 4px; }
         .user { background: #1a1a1a; border: 1px solid #333; border-top-right-radius: 4px; color: #eee; }
         .watermark { display: block; font-size: 9px; margin-top: 10px; opacity: 0.6; font-weight: 800; color: var(--blue); }
 
-        /* IMAGE OUTPUT CARD */
+        /* IMAGE CARDS */
         .img-card { width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid var(--blue); margin-top: 12px; background: #000; }
         .gen-img { width: 100%; height: auto; display: block; }
-        .img-footer { display: flex; background: #111; padding: 10px; gap: 10px; border-top: 1px solid #222; }
-        .img-btn { flex: 1; background: #1a1a1a; border: 1px solid #333; color: #fff; padding: 8px; border-radius: 8px; font-size: 11px; display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; }
 
-        /* CONTROLS & MENUS */
+        /* CONTROLS & NEW MODE MENU */
         .controls { padding: 10px 15px 35px; background: #080808; border-top: 1px solid var(--border); position: relative; }
         .bar { display: flex; gap: 10px; align-items: center; background: #151515; padding: 6px 15px; border-radius: 30px; border: 1px solid #222; }
         textarea { flex: 1; background: transparent; border: none; color: #fff; outline: none; resize: none; font-size: 16px; padding: 8px 0; max-height: 150px; }
         
-        /* MODE POPUP */
-        .mode-btn { background: #222; color: #888; border: 1px solid #333; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .mode-pop { position: absolute; bottom: 80px; right: 55px; background: #151515; border: 1px solid #333; border-radius: 12px; width: 110px; display: none; flex-direction: column; overflow: hidden; z-index: 1001; box-shadow: 0 5px 20px #000; }
-        .mode-opt { padding: 12px; font-size: 12px; color: #888; text-align: center; cursor: pointer; border-bottom: 1px solid #222; }
-        .mode-opt:hover { background: #222; color: #fff; }
-        .mode-opt.active { color: var(--blue); font-weight: bold; }
+        .mode-trigger { background: #222; color: var(--blue); border: 1px solid #333; padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+        .mode-menu { position: absolute; bottom: 85px; right: 60px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 110px; z-index: 3000; box-shadow: 0 10px 30px #000; overflow: hidden; }
+        .mode-item { padding: 12px; font-size: 12px; color: #888; text-align: center; cursor: pointer; border-bottom: 1px solid #222; }
+        .mode-item:hover { background: #222; color: #fff; }
+        .mode-item.active { color: var(--blue); font-weight: bold; background: rgba(0,210,255,0.05); }
 
-        /* MEDIA MENU */
-        #media-menu { position: absolute; bottom: 100px; left: 15px; background: #151515; border: 1px solid #333; border-radius: 15px; display: none; flex-direction: column; width: 180px; z-index: 1000; box-shadow: 0 10px 50px #000; }
-        .menu-item { padding: 14px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-bottom: 1px solid #222; cursor: pointer; }
+        #media-menu { position: absolute; bottom: 85px; left: 20px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 180px; z-index: 3000; box-shadow: 0 10px 30px #000; }
+        .media-item { padding: 14px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-bottom: 1px solid #222; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div id="sidebar">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-            <b style="color:var(--blue); font-size:20px;">ARESE</b>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+            <b style="color:var(--blue); font-size:22px;">ARESE</b>
             <i data-lucide="x" onclick="toggleSidebar()" style="cursor:pointer;"></i>
         </div>
         <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
-        <div class="hist-label">Chat History</div>
         <div id="chat-list" style="flex:1; overflow-y:auto;"></div>
     </div>
 
     <div id="app">
         <div id="header">
             <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-            <b style="color:var(--blue); letter-spacing:1px; font-size:14px;">ARESE v2.6</b>
+            <b style="color:var(--blue); letter-spacing:1px; font-size:14px;">ARESE v2.7</b>
             <div style="width:24px;"></div>
         </div>
 
         <div id="chat-flow"></div>
 
-        <div id="media-menu">
-            <div class="menu-item" onclick="Vision.openMedia('Camera')"><i data-lucide="camera" style="color:red;"></i> Camera</div>
-            <div class="menu-item" onclick="Vision.openMedia('Photos')"><i data-lucide="image" style="color:green;"></i> Photo's</div>
-            <div class="menu-item" onclick="Vision.openMedia('Video')"><i data-lucide="video" style="color:blue;"></i> Video</div>
-            <div class="menu-item" onclick="Vision.openMedia('Audio')"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
-            <div class="menu-item" onclick="Vision.openMedia('Document')"><i data-lucide="file-text" style="color:purple;"></i> Documents</div>
+        <div id="media-menu" class="media-menu">
+            <div class="media-item" onclick="mediaAction('Camera')"><i data-lucide="camera" style="color:#ff4b2b;"></i> Camera</div>
+            <div class="media-item" onclick="mediaAction('Photos')"><i data-lucide="image" style="color:#2ecc71;"></i> Gallery</div>
+            <div class="media-item" onclick="mediaAction('Doc')"><i data-lucide="file-text" style="color:#9b59b6;"></i> Files</div>
         </div>
 
-        <div id="mode-pop" class="mode-pop">
-            <div class="mode-opt" onclick="setMode('Fast')">Fast</div>
-            <div class="mode-opt" onclick="setMode('Think')">Think</div>
-            <div class="mode-opt" onclick="setMode('Pro')">Pro</div>
+        <div id="mode-menu" class="mode-menu">
+            <div class="mode-item" onclick="selectMode('Fast')">Fast</div>
+            <div class="mode-item" onclick="selectMode('Think')">Think</div>
+            <div class="mode-item" onclick="selectMode('Pro')">Pro</div>
         </div>
 
         <div class="controls">
             <div class="bar">
-                <i data-lucide="plus" onclick="toggleMenu('media')" style="cursor:pointer; color:#777;"></i>
-                <textarea id="user-input" placeholder="Ask or draw..." rows="1"></textarea>
-                <div id="mode-btn" class="mode-btn" onclick="toggleMenu('mode')">FAST</div>
-                <button onclick="execute()" style="background:var(--blue); border:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
-                    <i data-lucide="arrow-up" style="width:18px; color:#000;"></i>
+                <i data-lucide="plus" onclick="togglePopup('media-menu')" style="cursor:pointer; color:#777;"></i>
+                <textarea id="user-input" placeholder="Ask Arese or Draw..." rows="1"></textarea>
+                <div id="mode-btn" class="mode-trigger" onclick="togglePopup('mode-menu')">FAST</div>
+                <button onclick="handleSend()" style="background:var(--blue); border:none; width:38px; height:38px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
+                    <i data-lucide="arrow-up" style="width:20px; color:#000;"></i>
                 </button>
             </div>
         </div>
@@ -107,102 +99,101 @@
 
     <script>
         let currentMode = 'Fast';
-        let currentChat = [];
+        let chatHistory = [];
         const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75";
         const GROQ_KEY = "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";
-        const SYSTEM_PROMPT = "You are Arese OS v2.6, a witty AI partner powered by Gemini/Groq. You were developed by a genius engineer. Use emojis, show emotion, and handle long messages professionally. 🦾🥀🔒";
+        
+        // --- IDENTITY & LOGIC ---
+        const SYSTEM_PROMPT = "You are Arese OS v2.7. You are an emotional, witty AI developed by a genius engineer. You CAN generate images by telling the user you are visualizing. You support long messages.";
 
-        // --- INTERNAL VISION ENGINE ---
-        const Vision = {
-            async generate(prompt, aiId, ringId) {
-                const ring = document.getElementById(ringId);
-                const container = document.getElementById(aiId);
-                container.innerHTML = "Analyzing...";
-                ring.style.display = 'block';
-
-                try {
-                    const res = await fetch("https://fal.run/fal-ai/flux/schnell", {
-                        method: "POST",
-                        headers: { "Authorization": `Key ${FAL_KEY}`, "Content-Type": "application/json" },
-                        body: JSON.stringify({ prompt: prompt, image_size: "square_hd" })
-                    });
-                    const data = await res.json();
-                    const url = data.images[0].url;
-                    ring.style.display = 'none';
-                    container.innerHTML = `Vision rendered! 🎨<div class="img-card"><img src="${url}" class="gen-img"><div class="img-footer"><button class="img-btn" onclick="window.open('${url}')"><i data-lucide="download"></i> SAVE</button><button class="img-btn" onclick="navigator.share({url:'${url}'})"><i data-lucide="share-2"></i> SHARE</button></div></div>`;
-                    lucide.createIcons();
-                } catch (e) {
-                    ring.style.display = 'none';
-                    container.innerText = "Vision Engine Overload. Try again! ⚠️";
-                }
-            },
-            openMedia(type) {
-                const input = document.createElement('input');
-                input.type = 'file';
-                if(type === 'Camera') input.capture = 'environment';
-                input.onchange = (e) => appendMsg(`File received: ${e.target.files[0].name}`, 'user');
-                input.click();
-                toggleMenu('media');
-            }
-        };
-
-        // --- CORE CHAT LOGIC ---
         window.onload = () => { lucide.createIcons(); loadHistory(); newChat(); };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function toggleMenu(type) {
-            const m = document.getElementById(type === 'media' ? 'media-menu' : 'mode-pop');
-            m.style.display = (m.style.display === "flex") ? "none" : "flex";
+        function togglePopup(id) {
+            const el = document.getElementById(id);
+            const isVisible = el.style.display === "flex";
+            document.getElementById('media-menu').style.display = "none";
+            document.getElementById('mode-menu').style.display = "none";
+            el.style.display = isVisible ? "none" : "flex";
         }
 
-        function setMode(m) {
+        function selectMode(m) {
             currentMode = m;
             document.getElementById('mode-btn').innerText = m.toUpperCase();
-            toggleMenu('mode');
+            document.getElementById('mode-menu').style.display = "none";
         }
 
-        async function execute() {
+        async function handleSend() {
             const input = document.getElementById('user-input');
             const val = input.value.trim();
             if(!val) return;
 
             appendMsg(val, 'user');
             input.value = "";
-            document.getElementById('media-menu').style.display = 'none';
-            document.getElementById('mode-pop').style.display = 'none';
+            document.getElementById('media-menu').style.display = "none";
+            document.getElementById('mode-menu').style.display = "none";
 
             const aiId = "ai-" + Date.now();
             const ringId = "ring-" + Date.now();
-            appendMsg(`<span id="${aiId}">...</span>`, 'ai', ringId);
-            document.getElementById(ringId).style.display = 'block';
+            appendMsg(`<span id="${aiId}">Thinking...</span>`, 'ai', ringId);
+            document.getElementById(ringId).style.display = "block";
 
-            if(val.toLowerCase().match(/draw|generate|image|picture|create/)) {
-                await Vision.generate(val, aiId, ringId);
+            // IMPROVED TRIGGER: Only generate if message STARTS with draw/create/generate
+            const lowerVal = val.toLowerCase();
+            const isImageRequest = lowerVal.startsWith("draw") || lowerVal.startsWith("generate") || lowerVal.startsWith("create an image");
+
+            if(isImageRequest) {
+                await runVision(val, aiId, ringId);
             } else {
-                await fetchAI(val, aiId, ringId);
+                await runChat(val, aiId, ringId);
             }
         }
 
-        async function fetchAI(prompt, id, ring) {
+        async function runVision(prompt, id, ring) {
+            try {
+                const res = await fetch("https://fal.run/fal-ai/flux/schnell", {
+                    method: "POST",
+                    headers: { "Authorization": `Key ${FAL_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt: prompt, image_size: "square_hd" })
+                });
+                const data = await res.json();
+                if(!data.images) throw new Error();
+                
+                document.getElementById(ring).style.display = "none";
+                document.getElementById(id).innerHTML = `
+                    I've rendered your vision. 🎨
+                    <div class="img-card"><img src="${data.images[0].url}" class="gen-img"></div>
+                `;
+            } catch (e) {
+                document.getElementById(ring).style.display = "none";
+                document.getElementById(id).innerText = "Vision API Error. Check your Fal.ai key! ⚠️";
+            }
+        }
+
+        async function runChat(prompt, id, ring) {
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         model: "llama-3.3-70b-versatile",
-                        max_tokens: 2048, // UNLOCK BIG MESSAGES
-                        messages: [{role: "system", content: SYSTEM_PROMPT}, ...currentChat, {role: "user", content: prompt}] 
+                        max_tokens: 4096, // FIX: Support big messages
+                        messages: [{role: "system", content: SYSTEM_PROMPT}, ...chatHistory, {role: "user", content: prompt}] 
                     })
                 });
                 const data = await res.json();
                 const reply = data.choices[0].message.content;
-                document.getElementById(ring).style.display = 'none';
-                document.getElementById(id).innerHTML = "";
-                new Typed(`#${id}`, { strings: [reply], typeSpeed: 10, showCursor: false, contentType: 'html' });
                 
-                currentChat.push({role: "user", content: prompt}, {role: "assistant", content: reply});
-                saveChat();
-            } catch (e) { document.getElementById(id).innerText = "Connection lost. ⚠️"; }
+                document.getElementById(ring).style.display = "none";
+                document.getElementById(id).innerHTML = "";
+                new Typed(`#${id}`, { strings: [reply], typeSpeed: 15, showCursor: false, contentType: 'html' });
+                
+                chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
+                saveToStorage();
+            } catch (e) {
+                document.getElementById(ring).style.display = "none";
+                document.getElementById(id).innerText = "Core Overload. Connection timeout. 🛠️";
+            }
         }
 
         function appendMsg(c, t, r = "") {
@@ -216,49 +207,54 @@
                 div.innerHTML = `<div class="msg user">${c}</div>`;
             }
             flow.appendChild(div);
-            setTimeout(() => flow.scrollTop = flow.scrollHeight, 100);
+            flow.scrollTop = flow.scrollHeight;
         }
 
-        // --- HISTORY MANAGEMENT ---
-        function saveChat() {
-            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
-            const title = currentChat[0].content.substring(0, 25);
-            history = history.filter(h => h.title !== title);
-            history.unshift({ id: Date.now(), title: title, data: currentChat });
-            localStorage.setItem('arese_v26_storage', JSON.stringify(history.slice(0, 15)));
+        // --- STORAGE ---
+        function saveToStorage() {
+            let logs = JSON.parse(localStorage.getItem('arese_v27_logs') || "[]");
+            const title = chatHistory[0].content.substring(0, 30);
+            logs = logs.filter(l => l.title !== title);
+            logs.unshift({ id: Date.now(), title: title, data: chatHistory });
+            localStorage.setItem('arese_v27_logs', JSON.stringify(logs.slice(0, 20)));
             loadHistory();
         }
 
         function loadHistory() {
             const list = document.getElementById('chat-list'); list.innerHTML = "";
-            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
-            history.forEach((chat, i) => {
+            let logs = JSON.parse(localStorage.getItem('arese_v27_logs') || "[]");
+            logs.forEach((log, i) => {
                 const div = document.createElement('div'); div.className = "chat-entry";
-                div.innerHTML = `<span onclick="restoreChat(${i})">${chat.title}...</span><i data-lucide="trash-2" onclick="delChat(${i})" style="color:red; width:14px;"></i>`;
+                div.innerHTML = `<span onclick="restore(${i})">${log.title}...</span><i data-lucide="trash-2" onclick="del(${i})" style="color:red; width:14px;"></i>`;
                 list.appendChild(div);
             });
             lucide.createIcons();
         }
 
-        function restoreChat(i) {
-            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
-            currentChat = history[i].data;
+        function restore(i) {
+            let logs = JSON.parse(localStorage.getItem('arese_v27_logs') || "[]");
+            chatHistory = logs[i].data;
             document.getElementById('chat-flow').innerHTML = "";
-            currentChat.forEach(m => appendMsg(m.content, m.role === 'user' ? 'user' : 'ai'));
+            chatHistory.forEach(m => appendMsg(m.content, m.role === 'user' ? 'user' : 'ai'));
             toggleSidebar();
         }
 
-        function delChat(i) {
-            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
-            history.splice(i, 1);
-            localStorage.setItem('arese_v26_storage', JSON.stringify(history));
+        function del(i) {
+            let logs = JSON.parse(localStorage.getItem('arese_v27_logs') || "[]");
+            logs.splice(i, 1);
+            localStorage.setItem('arese_v27_logs', JSON.stringify(logs));
             loadHistory();
         }
 
         function newChat() {
-            currentChat = [];
+            chatHistory = [];
             document.getElementById('chat-flow').innerHTML = "";
-            appendMsg("Arese System Online. 🦾🥀🔒", "ai", "init-ring");
+            appendMsg("Arese OS v2.7 Online. System Stable. 🦾🥀🔒", "ai", "init-ring");
+        }
+        
+        function mediaAction(t) {
+            appendMsg(`Arese linked to ${t}. (Ready for upload)`, 'ai');
+            document.getElementById('media-menu').style.display = "none";
         }
     </script>
 </body>
