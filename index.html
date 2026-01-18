@@ -3,71 +3,68 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese OS v2.6</title>
+    <title>Arese OS v2.7</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
         :root { --blue: #00d2ff; --bg: #0b0b0b; --glass: rgba(255,255,255,0.08); }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
         
-        #header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid #151515; }
-        .logo { font-weight: 800; color: var(--blue); letter-spacing: 2px; }
+        #header { padding: 15px 20px; display: flex; justify-content: space-between; background: #080808; border-bottom: 1px solid #151515; color: var(--blue); font-weight: 800; }
+
+        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
         
-        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
-        .msg-container { display: flex; width: 100%; }
-        .user-side { justify-content: flex-end; }
+        /* CORRECT ALIGNMENT: User Right, Arese Left */
+        .msg-container { display: flex; width: 100%; margin-bottom: 5px; }
+        .user-side { justify-content: flex-end; } 
         .ai-side { justify-content: flex-start; }
-        
-        .msg { max-width: 80%; padding: 14px 18px; border-radius: 22px; font-size: 15px; }
-        .user { background: #222; border-bottom-right-radius: 4px; border: 1px solid #333; }
-        .ai { background: var(--glass); border: 1px solid var(--blue); border-bottom-left-radius: 4px; color: var(--blue); }
 
-        .media-preview { max-width: 100%; border-radius: 12px; margin-top: 10px; border: 1px solid #444; }
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.4; }
+        .user { background: #222; border: 1px solid #333; border-bottom-right-radius: 4px; }
+        .ai { background: var(--glass); border: 1px solid var(--blue); border-bottom-left-radius: 4px; color: #fff; }
 
-        .controls { padding: 15px 20px 30px; background: #050505; border-top: 1px solid #111; position: relative; }
-        .bar { display: flex; gap: 12px; align-items: center; background: #111; padding: 5px 15px; border-radius: 30px; border: 1px solid #222; }
-        textarea { flex: 1; background: transparent; border: none; color: #fff; padding: 10px 0; outline: none; resize: none; font-size: 16px; }
-        .btn-send { background: var(--blue); border: none; width: 40px; height: 40px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-        .icon-btn { color: #888; background: transparent; border: none; cursor: pointer; }
+        .media-content { max-width: 100%; border-radius: 10px; margin-top: 8px; border: 1px solid #444; display: block; }
+
+        .controls { padding: 15px 20px 30px; background: #050505; border-top: 1px solid #111; }
+        .bar { display: flex; gap: 12px; align-items: center; background: #111; padding: 8px 18px; border-radius: 30px; border: 1px solid #222; }
+        textarea { flex: 1; background: transparent; border: none; color: #fff; outline: none; resize: none; font-size: 16px; }
+        .btn-send { background: var(--blue); border: none; width: 40px; height: 40px; border-radius: 50%; color: #000; cursor: pointer; }
     </style>
 </head>
 <body>
-    <div id="header"><div class="logo">ARESE v2.6</div></div>
+    <div id="header">ARESE OS v2.7</div>
     <div id="chat-flow"></div>
 
     <div class="controls">
         <div class="bar">
-            <button class="icon-btn" onclick="document.getElementById('file-input').click()"><i data-lucide="plus"></i></button>
-            <textarea id="user-input" placeholder="Ask or Draw..." rows="1"></textarea>
+            <button style="color:#888; background:none; border:none; cursor:pointer;" onclick="document.getElementById('file-input').click()"><i data-lucide="plus"></i></button>
+            <textarea id="user-input" placeholder="Ask or type 'draw'..." rows="1"></textarea>
             <button class="btn-send" onclick="execute()">➔</button>
         </div>
-        <input type="file" id="file-input" style="display: none;" onchange="handleFileUpload(this)">
+        <input type="file" id="file-input" style="display: none;" onchange="handleMedia(this)">
     </div>
 
     <script src="vision.js"></script>
 
     <script>
         const KEY = "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";
-        const IDENTITY = "Identity: Arese OS v2.6. friendly, use emojis 🦾🥀🔒.";
-
+        
         window.onload = () => { lucide.createIcons(); appendMsg("System Online. 🦾", "ai"); };
 
-        // --- MEDIA FIX: LOADING IMAGES/VIDEOS INTO CHAT ---
-        function handleFileUpload(input) {
+        // --- MEDIA BUG FIX ---
+        function handleMedia(input) {
             const file = input.files[0];
             if (!file) return;
 
             const reader = new FileReader();
             reader.onload = (e) => {
-                let mediaHtml = "";
-                if (file.type.startsWith('image/')) {
-                    mediaHtml = `<img src="${e.target.result}" class="media-preview">`;
-                } else if (file.type.startsWith('video/')) {
-                    mediaHtml = `<video src="${e.target.result}" class="media-preview" controls></video>`;
-                }
-                appendMsg(`Sent a ${file.type.split('/')[0]}:<br>${mediaHtml}`, "user");
-                setTimeout(() => appendMsg("I've received your file! Analysis mode is spooling up. 🦾", "ai"), 1000);
+                let html = "";
+                if (file.type.startsWith('image/')) html = `<img src="${e.target.result}" class="media-content">`;
+                if (file.type.startsWith('video/')) html = `<video src="${e.target.result}" class="media-content" controls></video>`;
+                
+                appendMsg(`Sent ${file.name}:<br>${html}`, "user");
+                setTimeout(() => appendMsg("I've received the file. Processing... 🦾", "ai"), 800);
             };
             reader.readAsDataURL(file);
         }
@@ -80,15 +77,14 @@
             appendMsg(val, "user");
             input.value = "";
 
-            // Check if user wants an image
-            const drawTriggers = ["draw", "generate", "create image", "show me"];
-            if (drawTriggers.some(t => val.toLowerCase().includes(t))) {
+            // IMAGE TRIGGER
+            if (val.toLowerCase().includes("draw") || val.toLowerCase().includes("generate")) {
                 const id = "ai-" + Date.now();
-                appendMsg(`<span id="${id}">Sketching... 🎨</span>`, "ai");
+                appendMsg(`<span id="${id}">Creating your image... 🎨</span>`, "ai");
                 if (typeof generateImage === "function") {
-                    generateImage(val, id); // Call vision.js
+                    generateImage(val, id);
                 } else {
-                    document.getElementById(id).innerText = "Vision Module not found. ⚠️";
+                    document.getElementById(id).innerText = "Error: vision.js missing. ⚠️";
                 }
                 return;
             }
@@ -105,18 +101,18 @@
                     headers: { "Authorization": `Bearer ${KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify({
                         model: "llama-3.1-8b-instant",
-                        messages: [{role: "system", content: IDENTITY}, {role: "user", content: prompt}]
+                        messages: [{role: "system", content: "You are Arese OS. Talk on the left side."}, {role: "user", content: prompt}]
                     })
                 });
                 const data = await res.json();
                 document.getElementById(id).innerText = data.choices[0].message.content;
-            } catch (e) { document.getElementById(id).innerText = "Link failed. ⚠️"; }
+            } catch (e) { document.getElementById(id).innerText = "Link failed. Check API Key. ⚠️"; }
         }
 
         function appendMsg(content, type) {
             const flow = document.getElementById('chat-flow');
             const container = document.createElement('div');
-            container.className = `msg-container ${type}-side`;
+            container.className = `msg-container ${type === 'user' ? 'user-side' : 'ai-side'}`;
             container.innerHTML = `<div class="msg ${type}">${content}</div>`;
             flow.appendChild(container);
             flow.scrollTop = flow.scrollHeight;
