@@ -1,5 +1,3 @@
-</body>
-</html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -13,32 +11,31 @@
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
         html, body { height: 100dvh; width: 100vw; margin: 0; background: var(--bg); color: #fff; overflow: hidden; display: flex; }
 
-        /* SIDEBAR */
+        /* SIDEBAR & HISTORY */
         #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; height: 100%; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
         #sidebar.open { left: 0; box-shadow: 20px 0 50px #000; }
-        .new-chat-btn { width: 100%; padding: 14px; background: var(--blue); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 25px; }
+        .new-chat-btn { width: 100%; padding: 14px; background: var(--blue); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 25px; font-size: 14px; }
+        .hist-label { font-size: 10px; color: #444; font-weight: 900; margin: 15px 0 8px; letter-spacing: 1px; text-transform: uppercase; }
         .chat-entry { padding: 12px; background: #111; border: 1px solid #222; border-radius: 10px; margin-bottom: 8px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
 
-        /* APP */
+        /* MAIN APP */
         #app { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
         #header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid var(--border); }
         #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; scroll-behavior: smooth; }
 
-        /* MESSAGES (FIXED FOR BIG TEXT) */
+        /* MESSAGES (BIG TEXT COMPATIBLE) */
         .msg-container { display: flex; width: 100%; gap: 12px; }
         .user-side { justify-content: flex-end; }
         .ai-avatar { position: relative; width: 38px; height: 38px; flex-shrink: 0; }
         .ring { position: absolute; width: 100%; height: 100%; border: 2px solid transparent; border-top: 2px solid var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .msg-logo { width: 100%; height: 100%; border-radius: 50%; background: #000; border: 1px solid #333; }
-        
-        /* THIS FIXES THE BIG MESSAGE ISSUE */
         .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.6; word-wrap: break-word; white-space: pre-wrap; }
         .ai { background: var(--glass); border: 1px solid rgba(0,210,255,0.3); color: var(--blue); border-top-left-radius: 4px; }
         .user { background: #1a1a1a; border: 1px solid #333; border-top-right-radius: 4px; color: #eee; }
         .watermark { display: block; font-size: 9px; margin-top: 10px; opacity: 0.6; font-weight: 800; color: var(--blue); }
 
-        /* IMAGE OUTPUT */
+        /* IMAGE OUTPUT CARD */
         .img-card { width: 100%; border-radius: 15px; overflow: hidden; border: 1px solid var(--blue); margin-top: 12px; background: #000; }
         .gen-img { width: 100%; height: auto; display: block; }
         .img-footer { display: flex; background: #111; padding: 10px; gap: 10px; border-top: 1px solid #222; }
@@ -49,13 +46,14 @@
         .bar { display: flex; gap: 10px; align-items: center; background: #151515; padding: 6px 15px; border-radius: 30px; border: 1px solid #222; }
         textarea { flex: 1; background: transparent; border: none; color: #fff; outline: none; resize: none; font-size: 16px; padding: 8px 0; max-height: 150px; }
         
-        /* NEW MODE MENU STYLE */
-        .mode-btn { background: #222; color: #888; border: 1px solid #333; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; cursor: pointer; white-space: nowrap; }
-        .mode-menu-pop { position: absolute; bottom: 80px; right: 60px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; width: 120px; display: none; flex-direction: column; overflow: hidden; box-shadow: 0 5px 20px #000; z-index: 1001; }
-        .mode-opt { padding: 12px; font-size: 13px; color: #aaa; cursor: pointer; border-bottom: 1px solid #222; text-align: center; }
+        /* MODE POPUP */
+        .mode-btn { background: #222; color: #888; border: 1px solid #333; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: 800; cursor: pointer; transition: 0.2s; }
+        .mode-pop { position: absolute; bottom: 80px; right: 55px; background: #151515; border: 1px solid #333; border-radius: 12px; width: 110px; display: none; flex-direction: column; overflow: hidden; z-index: 1001; box-shadow: 0 5px 20px #000; }
+        .mode-opt { padding: 12px; font-size: 12px; color: #888; text-align: center; cursor: pointer; border-bottom: 1px solid #222; }
         .mode-opt:hover { background: #222; color: #fff; }
         .mode-opt.active { color: var(--blue); font-weight: bold; }
 
+        /* MEDIA MENU */
         #media-menu { position: absolute; bottom: 100px; left: 15px; background: #151515; border: 1px solid #333; border-radius: 15px; display: none; flex-direction: column; width: 180px; z-index: 1000; box-shadow: 0 10px 50px #000; }
         .menu-item { padding: 14px; display: flex; align-items: center; gap: 12px; font-size: 14px; border-bottom: 1px solid #222; cursor: pointer; }
     </style>
@@ -68,6 +66,7 @@
             <i data-lucide="x" onclick="toggleSidebar()" style="cursor:pointer;"></i>
         </div>
         <button class="new-chat-btn" onclick="newChat()">+ New Chat</button>
+        <div class="hist-label">Chat History</div>
         <div id="chat-list" style="flex:1; overflow-y:auto;"></div>
     </div>
 
@@ -81,14 +80,14 @@
         <div id="chat-flow"></div>
 
         <div id="media-menu">
-            <div class="menu-item" onclick="mediaAction('Camera')"><i data-lucide="camera" style="color:red;"></i> Camera</div>
-            <div class="menu-item" onclick="mediaAction('Photos')"><i data-lucide="image" style="color:green;"></i> Photo's</div>
-            <div class="menu-item" onclick="mediaAction('Video')"><i data-lucide="video" style="color:blue;"></i> Video</div>
-            <div class="menu-item" onclick="mediaAction('Audio')"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
-            <div class="menu-item" onclick="mediaAction('Document')"><i data-lucide="file-text" style="color:purple;"></i> Documents</div>
+            <div class="menu-item" onclick="Vision.openMedia('Camera')"><i data-lucide="camera" style="color:red;"></i> Camera</div>
+            <div class="menu-item" onclick="Vision.openMedia('Photos')"><i data-lucide="image" style="color:green;"></i> Photo's</div>
+            <div class="menu-item" onclick="Vision.openMedia('Video')"><i data-lucide="video" style="color:blue;"></i> Video</div>
+            <div class="menu-item" onclick="Vision.openMedia('Audio')"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
+            <div class="menu-item" onclick="Vision.openMedia('Document')"><i data-lucide="file-text" style="color:purple;"></i> Documents</div>
         </div>
 
-        <div id="mode-pop" class="mode-menu-pop">
+        <div id="mode-pop" class="mode-pop">
             <div class="mode-opt" onclick="setMode('Fast')">Fast</div>
             <div class="mode-opt" onclick="setMode('Think')">Think</div>
             <div class="mode-opt" onclick="setMode('Pro')">Pro</div>
@@ -97,7 +96,7 @@
         <div class="controls">
             <div class="bar">
                 <i data-lucide="plus" onclick="toggleMenu('media')" style="cursor:pointer; color:#777;"></i>
-                <textarea id="user-input" placeholder="Ask Arese..." rows="1"></textarea>
+                <textarea id="user-input" placeholder="Ask or draw..." rows="1"></textarea>
                 <div id="mode-btn" class="mode-btn" onclick="toggleMenu('mode')">FAST</div>
                 <button onclick="execute()" style="background:var(--blue); border:none; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer;">
                     <i data-lucide="arrow-up" style="width:18px; color:#000;"></i>
@@ -109,34 +108,57 @@
     <script>
         let currentMode = 'Fast';
         let currentChat = [];
-        // UPDATED KEYS & PROMPT
-        const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75"; 
+        const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75";
         const GROQ_KEY = "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";
-        const SYSTEM_PROMPT = "You are Arese OS v2.6. You are a soulful AI developed by a genius engineer. You use emojis. You can process long messages.";
+        const SYSTEM_PROMPT = "You are Arese OS v2.6, a witty AI partner powered by Gemini/Groq. You were developed by a genius engineer. Use emojis, show emotion, and handle long messages professionally. 🦾🥀🔒";
 
+        // --- INTERNAL VISION ENGINE ---
+        const Vision = {
+            async generate(prompt, aiId, ringId) {
+                const ring = document.getElementById(ringId);
+                const container = document.getElementById(aiId);
+                container.innerHTML = "Analyzing...";
+                ring.style.display = 'block';
+
+                try {
+                    const res = await fetch("https://fal.run/fal-ai/flux/schnell", {
+                        method: "POST",
+                        headers: { "Authorization": `Key ${FAL_KEY}`, "Content-Type": "application/json" },
+                        body: JSON.stringify({ prompt: prompt, image_size: "square_hd" })
+                    });
+                    const data = await res.json();
+                    const url = data.images[0].url;
+                    ring.style.display = 'none';
+                    container.innerHTML = `Vision rendered! 🎨<div class="img-card"><img src="${url}" class="gen-img"><div class="img-footer"><button class="img-btn" onclick="window.open('${url}')"><i data-lucide="download"></i> SAVE</button><button class="img-btn" onclick="navigator.share({url:'${url}'})"><i data-lucide="share-2"></i> SHARE</button></div></div>`;
+                    lucide.createIcons();
+                } catch (e) {
+                    ring.style.display = 'none';
+                    container.innerText = "Vision Engine Overload. Try again! ⚠️";
+                }
+            },
+            openMedia(type) {
+                const input = document.createElement('input');
+                input.type = 'file';
+                if(type === 'Camera') input.capture = 'environment';
+                input.onchange = (e) => appendMsg(`File received: ${e.target.files[0].name}`, 'user');
+                input.click();
+                toggleMenu('media');
+            }
+        };
+
+        // --- CORE CHAT LOGIC ---
         window.onload = () => { lucide.createIcons(); loadHistory(); newChat(); };
 
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        
         function toggleMenu(type) {
-            if(type === 'media') {
-                const m = document.getElementById('media-menu');
-                m.style.display = (m.style.display === "flex") ? "none" : "flex";
-            } else {
-                const m = document.getElementById('mode-pop');
-                m.style.display = (m.style.display === "flex") ? "none" : "flex";
-            }
+            const m = document.getElementById(type === 'media' ? 'media-menu' : 'mode-pop');
+            m.style.display = (m.style.display === "flex") ? "none" : "flex";
         }
 
         function setMode(m) {
             currentMode = m;
             document.getElementById('mode-btn').innerText = m.toUpperCase();
             toggleMenu('mode');
-        }
-
-        function mediaAction(type) {
-            appendMsg(`Arese accessing ${type}... (Simulated)`, 'ai');
-            toggleMenu('media');
         }
 
         async function execute() {
@@ -151,62 +173,16 @@
 
             const aiId = "ai-" + Date.now();
             const ringId = "ring-" + Date.now();
-            
-            // "Analyzing" state
-            if(val.toLowerCase().match(/draw|generate|image|picture/)) {
-                appendMsg(`<span id="${aiId}">Analyzing...</span>`, 'ai', ringId);
-                document.getElementById(ringId).style.display = 'block';
-                await generateImg(val, aiId, ringId);
+            appendMsg(`<span id="${aiId}">...</span>`, 'ai', ringId);
+            document.getElementById(ringId).style.display = 'block';
+
+            if(val.toLowerCase().match(/draw|generate|image|picture|create/)) {
+                await Vision.generate(val, aiId, ringId);
             } else {
-                appendMsg(`<span id="${aiId}">...</span>`, 'ai', ringId);
-                document.getElementById(ringId).style.display = 'block';
                 await fetchAI(val, aiId, ringId);
             }
         }
 
-        // FIXED IMAGE GENERATION
-        async function generateImg(prompt, id, ring) {
-            try {
-                // Using flux/schnell with safe fetch
-                const response = await fetch("https://fal.run/fal-ai/flux/schnell", {
-                    method: "POST",
-                    headers: { 
-                        "Authorization": `Key ${FAL_KEY}`, 
-                        "Content-Type": "application/json" 
-                    },
-                    body: JSON.stringify({ 
-                        prompt: prompt,
-                        image_size: "square_hd",
-                        num_inference_steps: 4,
-                        seed: Math.floor(Math.random() * 1000000)
-                    })
-                });
-
-                if (!response.ok) throw new Error("API Limit or Key Error");
-
-                const data = await response.json();
-                const url = data.images[0].url;
-                
-                document.getElementById(ring).style.display = 'none';
-                document.getElementById(id).innerHTML = `
-                    Vision rendered successfully. 🎨
-                    <div class="img-card">
-                        <img src="${url}" class="gen-img">
-                        <div class="img-footer">
-                            <button class="img-btn" onclick="window.open('${url}')"><i data-lucide="download"></i> SAVE</button>
-                            <button class="img-btn" onclick="navigator.share({url:'${url}'})"><i data-lucide="share-2"></i> SHARE</button>
-                        </div>
-                    </div>
-                `;
-                lucide.createIcons();
-            } catch (err) {
-                document.getElementById(ring).style.display = 'none';
-                document.getElementById(id).innerText = "Vision Engine Error: Check Network/Key. ⚠️";
-                console.error(err);
-            }
-        }
-
-        // FIXED LONG MESSAGE HANDLING
         async function fetchAI(prompt, id, ring) {
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -214,30 +190,19 @@
                     headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
                     body: JSON.stringify({ 
                         model: "llama-3.3-70b-versatile",
-                        // Max tokens increased to prevent cut-off
-                        max_tokens: 2048, 
+                        max_tokens: 2048, // UNLOCK BIG MESSAGES
                         messages: [{role: "system", content: SYSTEM_PROMPT}, ...currentChat, {role: "user", content: prompt}] 
                     })
                 });
                 const data = await res.json();
                 const reply = data.choices[0].message.content;
-                
                 document.getElementById(ring).style.display = 'none';
-                document.getElementById(id).innerHTML = ""; // Clear loader
-                
-                // Using Typed.js for effect, but handling format
-                new Typed(`#${id}`, { 
-                    strings: [reply], 
-                    typeSpeed: 10, 
-                    showCursor: false,
-                    contentType: 'html' // Allows formatting
-                });
+                document.getElementById(id).innerHTML = "";
+                new Typed(`#${id}`, { strings: [reply], typeSpeed: 10, showCursor: false, contentType: 'html' });
                 
                 currentChat.push({role: "user", content: prompt}, {role: "assistant", content: reply});
-                saveChatSession();
-            } catch (e) { 
-                document.getElementById(id).innerText = "Connection lost. ⚠️"; 
-            }
+                saveChat();
+            } catch (e) { document.getElementById(id).innerText = "Connection lost. ⚠️"; }
         }
 
         function appendMsg(c, t, r = "") {
@@ -245,41 +210,38 @@
             const div = document.createElement('div');
             div.className = `msg-container ${t}-side`;
             if(t === 'ai') {
-                div.innerHTML = `
-                    <div class="ai-avatar"><div class="ring" id="${r}"></div><img src="https://i.ibb.co/vzY8M7m/arese-logo.png" class="msg-logo"></div>
-                    <div class="msg ai">${c}<span class="watermark">Arese OS ✓</span></div>`;
+                div.innerHTML = `<div class="ai-avatar"><div class="ring" id="${r}"></div><img src="https://i.ibb.co/vzY8M7m/arese-logo.png" class="msg-logo"></div>
+                <div class="msg ai">${c}<span class="watermark">Arese OS ✓</span></div>`;
             } else {
                 div.innerHTML = `<div class="msg user">${c}</div>`;
             }
             flow.appendChild(div);
-            // Ensure we scroll to bottom even with big messages
             setTimeout(() => flow.scrollTop = flow.scrollHeight, 100);
         }
 
-        function saveChatSession() {
-            let history = JSON.parse(localStorage.getItem('arese_v26_hist') || "[]");
-            const title = currentChat[0].content.substring(0, 20) + "...";
-            // Remove old version of this chat if exists
-            history = history.filter(h => h.id !== currentChat.id); 
-            // Add Updated
+        // --- HISTORY MANAGEMENT ---
+        function saveChat() {
+            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
+            const title = currentChat[0].content.substring(0, 25);
+            history = history.filter(h => h.title !== title);
             history.unshift({ id: Date.now(), title: title, data: currentChat });
-            localStorage.setItem('arese_v26_hist', JSON.stringify(history.slice(0, 15)));
+            localStorage.setItem('arese_v26_storage', JSON.stringify(history.slice(0, 15)));
             loadHistory();
         }
 
         function loadHistory() {
             const list = document.getElementById('chat-list'); list.innerHTML = "";
-            let history = JSON.parse(localStorage.getItem('arese_v26_hist') || "[]");
+            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
             history.forEach((chat, i) => {
                 const div = document.createElement('div'); div.className = "chat-entry";
-                div.innerHTML = `<span onclick="restoreChat(${i})">${chat.title}</span><i data-lucide="trash-2" onclick="delChat(${i})" style="color:red; width:14px;"></i>`;
+                div.innerHTML = `<span onclick="restoreChat(${i})">${chat.title}...</span><i data-lucide="trash-2" onclick="delChat(${i})" style="color:red; width:14px;"></i>`;
                 list.appendChild(div);
             });
             lucide.createIcons();
         }
 
         function restoreChat(i) {
-            let history = JSON.parse(localStorage.getItem('arese_v26_hist') || "[]");
+            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
             currentChat = history[i].data;
             document.getElementById('chat-flow').innerHTML = "";
             currentChat.forEach(m => appendMsg(m.content, m.role === 'user' ? 'user' : 'ai'));
@@ -287,16 +249,16 @@
         }
 
         function delChat(i) {
-            let history = JSON.parse(localStorage.getItem('arese_v26_hist') || "[]");
+            let history = JSON.parse(localStorage.getItem('arese_v26_storage') || "[]");
             history.splice(i, 1);
-            localStorage.setItem('arese_v26_hist', JSON.stringify(history));
+            localStorage.setItem('arese_v26_storage', JSON.stringify(history));
             loadHistory();
         }
 
         function newChat() {
             currentChat = [];
             document.getElementById('chat-flow').innerHTML = "";
-            appendMsg("Arese v2.6 Online. Vision Engine & Core Memory Optimized. 🦾🥀🔒", "ai", "init-ring");
+            appendMsg("Arese System Online. 🦾🥀🔒", "ai", "init-ring");
         }
     </script>
 </body>
