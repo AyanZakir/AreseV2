@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Arese Vision 4K</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root { --blue: #00d2ff; --bg: #050505; --card: #111; --border: #1f1f1f; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { margin: 0; background: var(--bg); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
+
+        /* HEADER */
+        header { padding: 18px; display: flex; justify-content: space-between; align-items: center; background: #000; border-bottom: 1px solid var(--border); }
+        .vision-status { font-size: 10px; color: #444; letter-spacing: 2px; text-transform: uppercase; font-weight: 900; }
+
+        /* VIEWPORT */
+        #viewport { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 15px; background: radial-gradient(circle, #0f0f0f 0%, #050505 100%); }
+        #image-container { position: relative; width: 100%; max-width: 500px; border-radius: 15px; overflow: hidden; display: none; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(0,210,255,0.1); }
+        #output-img { width: 100%; height: auto; display: block; }
+        
+        /* WATERMARK - BOTTOM LEFT */
+        .watermark { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; color: var(--blue); border: 1px solid rgba(0,210,255,0.2); pointer-events: none; z-index: 10; }
+
+        /* MODES MENU */
+        .mode-container { display: flex; gap: 8px; padding: 15px; background: #000; }
+        .mode-card { flex: 1; padding: 12px; background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; }
+        .mode-card.active { border-color: var(--blue); background: rgba(0, 210, 255, 0.05); }
+        .mode-card b { display: block; font-size: 11px; color: #fff; }
+        .active-dot { position: absolute; top: 8px; right: 8px; width: 5px; height: 5px; background: var(--blue); border-radius: 50%; display: none; box-shadow: 0 0 5px var(--blue); }
+        .mode-card.active .active-dot { display: block; }
+
+        /* INPUT AREA */
+        .input-zone { padding: 15px 15px 30px; background: #000; border-top: 1px solid var(--border); }
+        .search-bar { display: flex; align-items: center; background: #111; padding: 10px 18px; border-radius: 30px; border: 1px solid #222; margin-bottom: 15px; }
+        input { flex: 1; background: transparent; border: none; color: #fff; font-size: 15px; }
+        
+        .btn-row { display: flex; gap: 10px; }
+        .generate-btn { flex: 1; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 14px; font-weight: 900; text-transform: uppercase; }
+        .icon-btn { width: 50px; background: #151515; border: 1px solid #222; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; }
+
+        /* NANO LOADING ANIMATION */
+        #loader { display: none; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
+        .nano-ring { width: 50px; height: 50px; border: 2px solid transparent; border-top: 2px solid var(--blue); border-left: 2px solid var(--blue); border-radius: 50%; animation: spin 0.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 12px; color: var(--blue); font-weight: 800; letter-spacing: 1px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="vision-status">Neural Visualizer</div>
+        <b style="font-size: 14px; color: var(--blue); letter-spacing: 1px;">ARESE v2.5</b>
+        <i data-lucide="zap" style="width:18px; color:var(--blue);"></i>
+    </header>
+
+    <div id="viewport">
+        <div id="placeholder" style="text-align:center; color:#222;">
+            <i data-lucide="mountain" style="width:60px; height:60px; margin-bottom:10px;"></i>
+            <p style="font-size:10px; font-weight:bold; letter-spacing:2px;">CORE IDLE</p>
+        </div>
+
+        <div id="loader">
+            <div class="nano-ring"></div>
+            <div id="status-msg" class="loading-text">INITIALIZING...</div>
+        </div>
+
+        <div id="image-container">
+            <img id="output-img" src="">
+            <div class="watermark">Arese OS ✓</div>
+        </div>
+    </div>
+
+    <div class="mode-container">
+        <div class="mode-card active" onclick="setMode('Fast', this)">
+            <div class="active-dot"></div><b>FAST</b>
+        </div>
+        <div class="mode-card" onclick="setMode('Think', this)">
+            <div class="active-dot"></div><b>THINK</b>
+        </div>
+        <div class="mode-card" onclick="setMode('Pro', this)">
+            <div class="active-dot"></div><b>PRO</b>
+        </div>
+    </div>
+
+    <div class="input-zone">
+        <div class="search-bar">
+            <input type="text" id="prompt-input" placeholder="Neural description...">
+        </div>
+        <div class="btn-row">
+            <button class="generate-btn" onclick="runGeneration()">Visualize</button>
+            <button class="icon-btn" onclick="downloadImage()"><i data-lucide="download"></i></button>
+            <button class="icon-btn" onclick="shareImage()"><i data-lucide="share-2"></i></button>
+        </div>
+    </div>
+
+    <script>
+        let selectedMode = 'Fast';
+        const FAL_KEY = "497d8139-336b-41b2-8a78-b23942a0ac51:fab2c66eee54d8b7f35e572984b75d75";
+
+        window.onload = () => lucide.createIcons();
+
+        function setMode(m, el) {
+            selectedMode = m;
+            document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        async function runGeneration() {
+            const prompt = document.getElementById('prompt-input').value.trim();
+            if(!prompt) return;
+
+            // SAFETY FIREWALL
+            const forbidden = ["suicide", "18+", "porn", "black magic", "gore"];
+            if(forbidden.some(w => prompt.toLowerCase().includes(w))) {
+                alert("I am sorry, I cannot assist with this request. Safety firewall active. 🛡️");
+                return;
+            }
+
+            document.getElementById('placeholder').style.display = "none";
+            document.getElementById('image-container').style.display = "none";
+            const loader = document.getElementById('loader');
+            const statusMsg = document.getElementById('status-msg');
+            loader.style.display = "flex";
+
+            // NANO LOADING SEQUENCE
+            const sequence = ["LOADING NANO BANANA PRO...", "ANALYZING NEURAL PATHS...", "RENDERING PIXELS..."];
+            let seqIdx = 0;
+            const seqInterval = setInterval(() => {
+                statusMsg.innerText = sequence[seqIdx];
+                seqIdx = (seqIdx + 1) % sequence.length;
+            }, 800);
+
+            let model = "fal-ai/flux/schnell";
+            let steps = 4;
+            if(selectedMode === 'Think') { model = "fal-ai/flux/dev"; steps = 28; }
+            if(selectedMode === 'Pro') { model = "fal-ai/flux-pro"; steps = 50; }
+
+            try {
+                const res = await fetch(`https://fal.run/${model}`, {
+                    method: "POST",
+                    headers: { "Authorization": `Key ${FAL_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt: prompt, image_size: "landscape_16_9", num_inference_steps: steps })
+                });
+
+                const data = await res.json();
+                const img = document.getElementById('output-img');
+                img.src = data.images[0].url;
+                img.onload = () => {
+                    clearInterval(seqInterval);
+                    loader.style.display = "none";
+                    document.getElementById('image-container').style.display = "block";
+                };
+            } catch (err) {
+                clearInterval(seqInterval);
+                alert("I am sorry, visualization failed. 🛠️");
+                loader.style.display = "none";
+                document.getElementById('placeholder').style.display = "flex";
+            }
+        }
+
+        function downloadImage() {
+            const img = document.getElementById('output-img');
+            if(!img.src) return;
+            const a = document.createElement('a');
+            a.href = img.src;
+            a.download = `Arese_${Date.now()}.png`;
+            a.click();
+        }
+
+        async function shareImage() {
+            const img = document.getElementById('output-img');
+            if(!img.src) return;
+            try {
+                const res = await fetch(img.src);
+                const blob = await res.blob();
+                const file = new File([blob], 'Arese_Visual.png', { type: 'image/png' });
+                await navigator.share({ files: [file], title: 'Arese OS Vision' });
+            } catch (e) { alert("Sharing not supported on this browser."); }
+        }
+    </script>
+</body>
+</html>
+
