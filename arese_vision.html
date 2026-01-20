@@ -3,64 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese Vision Fixed</title>
+    <title>Arese Vision Ultimate</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root { --blue: #00d2ff; --bg: #050505; --card: #111; --border: #1f1f1f; }
+        :root { --blue: #00d2ff; --red: #ff4757; --bg: #050505; --card: #111; --border: #1f1f1f; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* HEADER */
-        header { padding: 18px; display: flex; justify-content: space-between; align-items: center; background: #000; border-bottom: 1px solid var(--border); }
+        header { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: #000; border-bottom: 1px solid var(--border); z-index: 50; }
         .vision-status { font-size: 10px; color: #444; letter-spacing: 2px; text-transform: uppercase; font-weight: 900; }
+        .history-toggle { color: var(--blue); cursor: pointer; padding: 8px; border-radius: 50%; background: rgba(0, 210, 255, 0.1); }
 
         /* VIEWPORT */
-        #viewport { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 15px; background: radial-gradient(circle, #0f0f0f 0%, #050505 100%); }
+        #viewport { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; padding: 15px; background: radial-gradient(circle, #0f0f0f 0%, #050505 100%); overflow: hidden; }
         
         #image-container { position: relative; width: 100%; max-width: 500px; border-radius: 15px; overflow: hidden; display: none; border: 1px solid var(--border); box-shadow: 0 0 40px rgba(0,210,255,0.1); }
+        #output-img { width: 100%; height: auto; display: block; }
         
-        #output-img { width: 100%; height: auto; display: block; opacity: 0; transition: opacity 0.5s ease; }
-        #output-img.loaded { opacity: 1; }
-
-        /* WATERMARK - BOTTOM LEFT */
         .watermark { position: absolute; bottom: 12px; left: 12px; background: rgba(0,0,0,0.6); backdrop-filter: blur(10px); padding: 5px 12px; border-radius: 8px; font-size: 11px; font-weight: 800; color: var(--blue); border: 1px solid rgba(0,210,255,0.2); pointer-events: none; z-index: 10; }
 
         /* LOADING ANIMATION */
-        #loader { display: none; flex-direction: column; align-items: center; gap: 12px; text-align: center; }
-        .nano-ring { width: 50px; height: 50px; border: 2px solid transparent; border-top: 2px solid var(--blue); border-left: 2px solid var(--blue); border-radius: 50%; animation: spin 0.6s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+        #loader { display: none; flex-direction: column; align-items: center; gap: 15px; text-align: center; }
+        .nano-ring { width: 50px; height: 50px; border: 3px solid transparent; border-top: 3px solid var(--blue); border-right: 3px solid var(--blue); border-radius: 50%; animation: spin 0.6s linear infinite; }
         @keyframes spin { 100% { transform: rotate(360deg); } }
-        .loading-text { font-size: 12px; color: var(--blue); font-weight: 800; letter-spacing: 1px; }
+        .loading-text { font-size: 11px; color: var(--blue); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+
+        /* HISTORY DRAWER */
+        #history-panel { position: absolute; top: 0; right: -260px; width: 260px; height: 100%; background: #080808; border-left: 1px solid var(--border); transition: 0.3s ease; z-index: 100; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; }
+        #history-panel.open { right: 0; box-shadow: -10px 0 30px rgba(0,0,0,0.8); }
+        .history-item { width: 100%; border-radius: 10px; border: 1px solid #222; overflow: hidden; cursor: pointer; transition: 0.2s; position: relative; }
+        .history-item:active { transform: scale(0.98); border-color: var(--blue); }
+        .history-item img { width: 100%; display: block; }
+        .hist-tag { position: absolute; bottom: 5px; left: 5px; font-size: 8px; background: rgba(0,0,0,0.7); padding: 2px 5px; border-radius: 4px; color: #fff; }
 
         /* CONTROLS */
-        .mode-container { display: flex; gap: 8px; padding: 15px; background: #000; }
-        .mode-card { flex: 1; padding: 12px; background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: 0.3s; position: relative; }
+        .mode-container { display: flex; gap: 8px; padding: 15px; background: #000; border-top: 1px solid var(--border); }
+        .mode-card { flex: 1; padding: 12px; background: #0a0a0a; border: 1px solid var(--border); border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; position: relative; opacity: 1; }
         .mode-card.active { border-color: var(--blue); background: rgba(0, 210, 255, 0.05); }
+        .mode-card.disabled { opacity: 0.4; pointer-events: none; filter: grayscale(1); }
         .mode-card b { display: block; font-size: 11px; color: #fff; }
         .mode-card span { font-size: 9px; color: #555; display: block; margin-top: 3px; }
         .active-dot { position: absolute; top: 8px; right: 8px; width: 5px; height: 5px; background: var(--blue); border-radius: 50%; display: none; box-shadow: 0 0 5px var(--blue); }
         .mode-card.active .active-dot { display: block; }
 
-        .input-zone { padding: 15px 15px 30px; background: #000; border-top: 1px solid var(--border); }
-        .search-bar { display: flex; align-items: center; background: #111; padding: 10px 18px; border-radius: 30px; border: 1px solid #222; margin-bottom: 15px; }
-        input { flex: 1; background: transparent; border: none; color: #fff; font-size: 15px; }
+        .input-zone { padding: 0 15px 30px; background: #000; }
+        .search-bar { display: flex; align-items: center; background: #111; padding: 12px 18px; border-radius: 14px; border: 1px solid #222; margin-bottom: 12px; }
+        input { flex: 1; background: transparent; border: none; color: #fff; font-size: 14px; }
         
         .btn-row { display: flex; gap: 10px; }
-        .generate-btn { flex: 1; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 14px; font-weight: 900; text-transform: uppercase; }
-        .icon-btn { width: 50px; background: #151515; border: 1px solid #222; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; }
+        .generate-btn { flex: 1; padding: 15px; background: var(--blue); color: #000; border: none; border-radius: 14px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; transition: 0.2s; }
+        .generate-btn.stop { background: var(--red); color: #fff; }
+        .icon-btn { width: 50px; background: #151515; border: 1px solid #222; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: #fff; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="vision-status">Neural Visualizer</div>
-        <b style="font-size: 14px; color: var(--blue); letter-spacing: 1px;">ARESE v2.5</b>
-        <i data-lucide="zap" style="width:18px; color:var(--blue);"></i>
+        <div class="vision-status">Arese Neural Core v2.6</div>
+        <div class="history-toggle" onclick="toggleHistory()">
+            <i data-lucide="history" style="width:18px;"></i>
+        </div>
     </header>
 
-    <div id="viewport">
+    <div id="viewport" onclick="closeHistory()">
         <div id="placeholder" style="text-align:center; color:#222;">
-            <i data-lucide="mountain" style="width:60px; height:60px; margin-bottom:10px;"></i>
-            <p style="font-size:10px; font-weight:bold; letter-spacing:2px;">CORE IDLE</p>
+            <i data-lucide="aperture" style="width:50px; height:50px; margin-bottom:15px; opacity:0.5;"></i>
+            <p style="font-size:10px; font-weight:bold; letter-spacing:2px; color:#333;">READY FOR INPUT</p>
         </div>
 
         <div id="loader">
@@ -72,116 +81,214 @@
             <img id="output-img" src="">
             <div class="watermark">Arese OS ✓</div>
         </div>
+
+        <div id="history-panel">
+            <div style="font-size:10px; color:#555; text-transform:uppercase; letter-spacing:1px; margin-bottom:10px;">Session History</div>
+            <div id="history-list"></div>
+        </div>
     </div>
 
     <div class="mode-container">
-        <div class="mode-card active" onclick="setMode('Fast', this)">
+        <div class="mode-card active" id="btn-fast" onclick="setMode('Fast')">
             <div class="active-dot"></div><b>FAST</b><span>1080P</span>
         </div>
-        <div class="mode-card" onclick="setMode('Think', this)">
-            <div class="active-dot"></div><b>THINK</b><span>2K DETAILED</span>
+        <div class="mode-card" id="btn-think" onclick="setMode('Think')">
+            <div class="active-dot"></div><b>THINK</b><span>2K HDR</span>
         </div>
-        <div class="mode-card" onclick="setMode('Pro', this)">
+        <div class="mode-card" id="btn-pro" onclick="setMode('Pro')">
             <div class="active-dot"></div><b>PRO</b><span>4K ULTRA</span>
         </div>
     </div>
 
     <div class="input-zone">
         <div class="search-bar">
-            <input type="text" id="prompt-input" placeholder="Neural description...">
+            <input type="text" id="prompt-input" placeholder="Imagine something..." oninput="saveInput()">
         </div>
         <div class="btn-row">
-            <button class="generate-btn" onclick="runGeneration()">Visualize</button>
-            <button class="icon-btn" onclick="downloadImage()"><i data-lucide="download"></i></button>
-            <button class="icon-btn" onclick="shareImage()"><i data-lucide="share-2"></i></button>
+            <button id="main-btn" class="generate-btn" onclick="handleAction()">Visualize</button>
+            <button class="icon-btn" onclick="downloadImage()"><i data-lucide="download" style="width:18px;"></i></button>
+            <button class="icon-btn" onclick="shareImage()"><i data-lucide="share-2" style="width:18px;"></i></button>
         </div>
     </div>
 
     <script>
-        let selectedMode = 'Fast';
-        let seqInterval = null;
+        // --- SYSTEM CORE VARIABLES ---
+        let currentMode = 'Fast';
+        let isGenerating = false;
+        let abortController = null; // The "Stop" Switch
+        let memory = { 'Fast': '', 'Think': '', 'Pro': '' }; // Input Memory
+        let history = []; // Image History
 
         window.onload = () => lucide.createIcons();
 
-        function setMode(m, el) {
-            selectedMode = m;
+        // --- 1. MODE & MEMORY SYSTEM ---
+        function setMode(mode) {
+            if(isGenerating) return; // STRICT LOCK: Cannot switch while generating
+
+            // Save current input to memory before switching
+            saveInput();
+
+            currentMode = mode;
+            
+            // UI Updates
             document.querySelectorAll('.mode-card').forEach(c => c.classList.remove('active'));
-            el.classList.add('active');
+            document.getElementById(`btn-${mode.toLowerCase()}`).classList.add('active');
+
+            // Restore input from memory
+            const input = document.getElementById('prompt-input');
+            input.value = memory[mode];
+            input.focus();
         }
 
-        async function runGeneration() {
+        function saveInput() {
+            const val = document.getElementById('prompt-input').value;
+            memory[currentMode] = val;
+        }
+
+        // --- 2. GENERATION LOGIC (THE FIX) ---
+        async function handleAction() {
+            if(isGenerating) {
+                stopGeneration();
+            } else {
+                startGeneration();
+            }
+        }
+
+        async function startGeneration() {
             const prompt = document.getElementById('prompt-input').value.trim();
             if(!prompt) return;
 
-            // RESET UI
+            // UI LOCKDOWN
+            isGenerating = true;
+            toggleControls(false); // Disable modes
+            const btn = document.getElementById('main-btn');
+            btn.innerText = "STOP";
+            btn.classList.add('stop');
+            
+            // VIEWPORT SETUP
             document.getElementById('placeholder').style.display = "none";
             document.getElementById('image-container').style.display = "none";
-            const img = document.getElementById('output-img');
-            img.classList.remove('loaded'); // Reset fade-in
-            img.src = ""; // Clear old image
-
-            // START LOADING
             const loader = document.getElementById('loader');
             const statusMsg = document.getElementById('status-msg');
             loader.style.display = "flex";
 
-            // LOADING LOOP (Nano Banana Style)
-            const sequence = ["LOADING NANO BANANA PRO...", "STABILIZING NEURAL CORE...", "DECODING PIXELS..."];
-            let seqIdx = 0;
-            if(seqInterval) clearInterval(seqInterval);
-            seqInterval = setInterval(() => {
-                statusMsg.innerText = sequence[seqIdx];
-                seqIdx = (seqIdx + 1) % sequence.length;
+            // ABORT CONTROLLER (Allows Stopping)
+            abortController = new AbortController();
+            const signal = abortController.signal;
+
+            // NANO BANANA LOOP
+            const msgs = ["LOADING NANO BANANA...", "CONNECTING NEURAL NET...", "RENDERING PIXELS..."];
+            let msgIdx = 0;
+            const msgInterval = setInterval(() => {
+                statusMsg.innerText = msgs[msgIdx];
+                msgIdx = (msgIdx + 1) % msgs.length;
             }, 800);
 
-            // --- MODE CONFIGURATION ---
-            let width = 1080; 
-            let height = 1080;
-            let model = 'flux';
-            let seed = Math.floor(Math.random() * 999999); // Random seed forces new image
+            try {
+                // --- PARAMETER CONFIG ---
+                let width = 1080, height = 1080, seed = Math.floor(Math.random() * 99999);
+                let model = 'flux'; // Default Fast
 
-            if(selectedMode === 'Fast') {
-                width = 1080; height = 1080; // Standard Square/Portrait
-                statusMsg.innerText = "QUICK RENDER (1080P)...";
-            }
-            if(selectedMode === 'Think') {
-                width = 1920; height = 1080; // Landscape 2K
-                seed = seed + 1; // Slight shift
-            }
-            if(selectedMode === 'Pro') {
-                width = 3840; height = 2160; // 4K Ultra
-                model = 'flux-realism'; // Forces higher detail model
-                statusMsg.innerText = "PROCESSING 4K DATA (MAY TAKE TIME)...";
-            }
+                if(currentMode === 'Think') { width = 1920; height = 1080; seed += 10; }
+                if(currentMode === 'Pro') { 
+                    width = 3840; height = 2160; 
+                    model = 'flux-realism'; 
+                    statusMsg.innerText = "PROCESSING 4K DATA...";
+                }
 
-            // GENERATE URL (Pollinations API)
-            // Added 'nologo=true' to remove their branding so only yours shows
-            const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`;
+                // --- THE API CALL (FETCH METHOD) ---
+                const url = `https://pollinations.ai/p/${encodeURIComponent(prompt)}?width=${width}&height=${height}&seed=${seed}&model=${model}&nologo=true`;
 
-            // TRIGGER LOAD
-            img.onload = () => {
-                clearInterval(seqInterval); // STOP ANIMATION
+                // CRITICAL FIX: We fetch the BLOB first. This prevents the browser from "giving up".
+                const response = await fetch(url, { signal });
+                
+                if (!response.ok) throw new Error("Server Reject");
+
+                const blob = await response.blob();
+                const objectURL = URL.createObjectURL(blob);
+
+                // SUCCESS DISPLAY
+                const img = document.getElementById('output-img');
+                img.src = objectURL;
+                
+                clearInterval(msgInterval);
                 loader.style.display = "none";
                 document.getElementById('image-container').style.display = "block";
-                setTimeout(() => img.classList.add('loaded'), 100); // Smooth fade in
-            };
+                
+                addToHistory(objectURL, currentMode);
+                resetUI();
 
-            img.onerror = () => {
-                clearInterval(seqInterval);
-                statusMsg.innerText = "CONNECTION FAILED. RETRYING...";
-                setTimeout(runGeneration, 2000); // Auto-retry
-            };
-
-            // Start fetching
-            img.src = url;
+            } catch (err) {
+                clearInterval(msgInterval);
+                if (err.name === 'AbortError') {
+                    statusMsg.innerText = "GENERATION STOPPED";
+                } else {
+                    statusMsg.innerText = "ERROR. TRY SIMPLER PROMPT.";
+                }
+                setTimeout(() => {
+                    if(!isGenerating) {
+                        loader.style.display = "none";
+                        if(document.getElementById('output-img').src) {
+                            document.getElementById('image-container').style.display = "block";
+                        } else {
+                            document.getElementById('placeholder').style.display = "block";
+                        }
+                    }
+                }, 1500);
+                resetUI();
+            }
         }
 
+        function stopGeneration() {
+            if(abortController) abortController.abort();
+            resetUI();
+        }
+
+        function resetUI() {
+            isGenerating = false;
+            toggleControls(true); // Re-enable modes
+            const btn = document.getElementById('main-btn');
+            btn.innerText = "VISUALIZE";
+            btn.classList.remove('stop');
+        }
+
+        function toggleControls(enable) {
+            const cards = document.querySelectorAll('.mode-card');
+            cards.forEach(c => {
+                if(enable) c.classList.remove('disabled');
+                else c.classList.add('disabled');
+            });
+        }
+
+        // --- 3. HISTORY SYSTEM ---
+        function addToHistory(url, mode) {
+            const list = document.getElementById('history-list');
+            const item = document.createElement('div');
+            item.className = 'history-item';
+            item.innerHTML = `<img src="${url}"><div class="hist-tag">${mode}</div>`;
+            item.onclick = () => {
+                document.getElementById('output-img').src = url;
+                document.getElementById('image-container').style.display = 'block';
+                closeHistory();
+            };
+            list.prepend(item);
+        }
+
+        function toggleHistory() {
+            document.getElementById('history-panel').classList.toggle('open');
+        }
+
+        function closeHistory() {
+            document.getElementById('history-panel').classList.remove('open');
+        }
+
+        // --- 4. EXPORT ---
         async function downloadImage() {
             const img = document.getElementById('output-img');
-            if(!img.src || img.src === window.location.href) return;
+            if(!img.src) return;
             const a = document.createElement('a');
             a.href = img.src;
-            a.download = `Arese_${selectedMode}_${Date.now()}.png`;
+            a.download = `Arese_${Date.now()}.png`;
             a.click();
         }
 
@@ -191,11 +298,9 @@
             try {
                 const res = await fetch(img.src);
                 const blob = await res.blob();
-                const file = new File([blob], 'arese_vision.png', { type: 'image/png' });
-                await navigator.share({ files: [file], title: 'Arese Vision' });
-            } catch (e) {
-                alert("Sharing not supported. Use Download.");
-            }
+                const file = new File([blob], 'visual.png', { type: 'image/png' });
+                await navigator.share({ files: [file] });
+            } catch (e) { alert("Use Download instead."); }
         }
     </script>
 </body>
