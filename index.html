@@ -1,139 +1,185 @@
+Just make this code like i said, it has the response thing, just make sure the features are here, no image generator or thing's like that, but like a chat bot with Language's and things like double check,
+And response mode in pile shape and blue glow and analyzing things
+
+
+This code is not broken so please don't broke this one
+
+"
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese OS | Brain v2.1</title>
+    <title>Arese OS v2.0 | MAS</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/marked/marked.min.js"></script>
+    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
-        :root { --blue: #00d2ff; --bg: #050505; --panel: #0a0a0a; --border: #1a1a1a; --red: #ff4b2b; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; }
+        :root { --blue: #00d2ff; --bg: #050505; --border: #1a1a1a; --red: #ff4b2b; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; transition: 0.2s ease; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
+        /* SIDEBAR */
+        #sidebar { position: fixed; left: -280px; width: 280px; height: 100%; background: #0a0a0a; border-right: 1px solid var(--border); z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
+        #sidebar.open { left: 0; box-shadow: 10px 0 50px #000; }
+        .history-item { padding: 12px; background: #0d0d0d; border-radius: 10px; margin-bottom: 8px; font-size: 13px; color: #666; cursor: pointer; border: 1px solid #111; }
+
         /* HEADER */
-        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: var(--panel); }
-        .brand { font-weight: 900; font-size: 13px; letter-spacing: 2px; }
-        .status-dot { width: 10px; height: 10px; background: var(--blue); border-radius: 50%; box-shadow: 0 0 10px var(--blue); }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: #0a0a0a; }
+        .dev-tag { font-size: 8px; color: #444; letter-spacing: 1px; font-weight: 900; }
 
-        /* CHAT FLOW */
-        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 85%; padding: 12px 18px; border-radius: 22px; font-size: 15px; line-height: 1.5; position: relative; }
-        .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
-        .ai { align-self: flex-start; background: #111; border: 1px solid #222; border-bottom-left-radius: 4px; color: #eee; }
-        .disclaimer { font-size: 10px; color: #444; margin-top: 10px; border-top: 1px solid #1a1a1a; padding-top: 6px; font-weight: bold; }
+        /* CHAT FLOW & SCROLLBAR */
+        #chat-flow { flex: 1; overflow-y: scroll; padding: 20px; display: flex; flex-direction: column; gap: 15px; scrollbar-width: thin; scrollbar-color: var(--blue) transparent; }
+        #chat-flow::-webkit-scrollbar { width: 4px; }
+        #chat-flow::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
 
-        /* ANALYZING RING */
-        .analyzing-box { display: none; align-items: center; gap: 10px; padding: 0 20px 10px; color: var(--blue); font-size: 12px; font-weight: 800; }
-        .ring { width: 16px; height: 16px; border: 2px solid rgba(0,210,255,0.1); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; box-shadow: 0 0 8px var(--blue); }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        .msg { max-width: 85%; padding: 12px 18px; border-radius: 20px; line-height: 1.6; font-size: 15px; }
+        .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 600; border-top-right-radius: 4px; }
+        .ai { align-self: flex-start; background: #111; border: 1px solid #222; border-top-left-radius: 4px; color: #eee; }
+        .disclaimer { font-size: 10px; color: #555; margin-top: 8px; border-top: 1px solid #222; padding-top: 5px; font-weight: bold; }
 
-        /* RESPONSE MODES (Pill Shape) */
-        .mode-container { display: flex; justify-content: center; gap: 10px; padding: 10px; background: var(--bg); }
-        .mode-pill { padding: 8px 16px; border-radius: 25px; border: 1px solid #333; font-size: 11px; font-weight: 900; color: #555; cursor: pointer; transition: 0.3s; }
-        .mode-pill.active { 
-            color: var(--blue); border-color: var(--blue); background: rgba(0,210,255,0.1); 
-            box-shadow: 0 0 15px rgba(0,210,255,0.5); text-shadow: 0 0 5px var(--blue);
-        }
+        /* ANALYZING ANIMATION */
+        .analyzing-box { display: none; align-items: center; gap: 10px; padding: 10px 20px; color: var(--blue); font-size: 12px; font-weight: bold; }
+        .circle-loader { width: 18px; height: 18px; border: 2px solid rgba(0,210,255,0.2); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; }
 
-        /* INPUT AREA */
-        .controls { padding: 10px 20px 30px; background: var(--bg); }
-        .input-box { background: #111; border-radius: 30px; border: 1px solid #222; display: flex; align-items: center; padding: 5px 15px; gap: 10px; }
+        /* PILL SELECTOR */
+        .pill-container { display: flex; justify-content: center; margin-bottom: 10px; position: relative; height: 36px; }
+        .pill-trigger { background: #111; border: 1px solid #333; padding: 0 20px; border-radius: 25px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--blue); }
+        .pill-menu { display: none; background: #111; border: 1px solid #333; border-radius: 25px; padding: 4px; position: absolute; bottom: 0; gap: 5px; z-index: 100; }
+        .pill-menu.open { display: flex; }
+
+        /* INPUT BAR */
+        .controls { padding: 10px 20px 30px; background: #050505; }
+        .input-box { background: #111; border-radius: 30px; border: 1px solid #222; display: flex; align-items: center; padding: 5px 15px; gap: 12px; }
         textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; padding: 12px 0; font-size: 16px; max-height: 120px; }
-        .btn { width: 44px; height: 44px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .send-btn { background: var(--blue); color: #000; }
-        .stop-btn { background: var(--red); color: #fff; }
+        
+        .action-btn { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .plus-btn { background: #1a1a1a; color: #888; border: 1px solid #222; }
+        .btn-send { background: var(--blue); color: #000; }
+        .btn-stop { background: var(--red); color: #fff; }
+
+        /* MENU FOR PLUS */
+        .plus-menu { display: none; position: absolute; bottom: 90px; left: 20px; background: #111; border: 1px solid #222; border-radius: 15px; padding: 10px; flex-direction: column; gap: 5px; z-index: 1000; width: 150px; }
+        .plus-opt { padding: 10px; font-size: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; color: #ccc; }
+        .plus-opt:hover { background: #1a1a1a; border-radius: 10px; }
+
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; backdrop-filter: blur(4px); }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
+    <div id="overlay" onclick="toggleSidebar()"></div>
+
+    <div id="plus-menu" class="plus-menu">
+        <div class="plus-opt" onclick="openMedia('camera')"><i data-lucide="camera" style="width:16px"></i> Camera</div>
+        <div class="plus-opt" onclick="openMedia('image/*')"><i data-lucide="image" style="width:16px"></i> Gallery</div>
+        <div class="plus-opt" onclick="openMedia('*')"><i data-lucide="file-text" style="width:16px"></i> Document</div>
+        <input type="file" id="file-input" style="display:none" onchange="handleFile(this)">
+    </div>
+
+    <div id="sidebar">
+        <h3 style="color:var(--blue); letter-spacing: 2px;">ARCHIVE</h3>
+        <div id="history-list"></div>
+        <div class="settings-box" style="margin-top:auto">
+            <button class="sidebar-btn" onclick="setLang('en')">English</button>
+            <button class="sidebar-btn" onclick="setLang('ur')">Urdu</button>
+            <button class="sidebar-btn" onclick="setLang('roman')">Roman Urdu</button>
+        </div>
+    </div>
+
     <header>
-        <i data-lucide="menu" style="color:var(--blue); opacity:0.5;"></i>
-        <div class="brand">ARESE // <span style="color:var(--blue)">CORE</span></div>
-        <div class="status-dot"></div>
+        <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
+        <div style="text-align: center;">
+            <div style="font-weight: 900; font-size: 13px; letter-spacing: 2px;">ARESE // <span style="color:var(--blue)">CORE</span></div>
+            <div class="dev-tag">DEVELOPED BY MAS | GROQ + GEMINI</div>
+        </div>
+        <div id="status-dots" style="display:flex; gap:3px;">
+            <div class="circle-loader" style="width:12px; height:12px; display:none;" id="header-loader"></div>
+            <div id="dot-indicator" style="width:8px; height:8px; background:var(--blue); border-radius:50%"></div>
+        </div>
     </header>
 
     <div id="chat-flow"></div>
 
     <div id="analyzing" class="analyzing-box">
-        <div class="ring"></div>
-        <span>Analyzing core...</span>
+        <div class="circle-loader"></div>
+        <span id="analyze-text">Analyzing System...</span>
     </div>
 
-    <div class="mode-container">
-        <div class="mode-pill active" onclick="setMode('fast', this)">FAST</div>
-        <div class="mode-pill" onclick="setMode('think', this)">THINK</div>
-        <div class="mode-pill" onclick="setMode('pro', this)">PRO</div>
+    <div class="pill-container">
+        <div class="pill-trigger" onclick="togglePill()"><span id="cur-mode">FAST</span> <i data-lucide="chevron-up" style="width:12px"></i></div>
+        <div id="pill-menu" class="pill-menu">
+            <div class="pill-opt active" onclick="setMode('Fast')">FAST</div>
+            <div class="pill-opt" onclick="setMode('Think')">THINK</div>
+            <div class="pill-opt" onclick="setMode('Pro')">PRO</div>
+        </div>
     </div>
 
     <div class="controls">
         <div class="input-box">
-            <textarea id="user-input" placeholder="Message Arese..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-            <button id="action-btn" class="btn send-btn" onclick="handleAction()">
-                <i id="btn-icon" data-lucide="arrow-up" style="width:22px;"></i>
+            <button class="action-btn plus-btn" onclick="togglePlus()"><i data-lucide="plus"></i></button>
+            <textarea id="user-input" placeholder="Enter command..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <button id="action-btn" class="action-btn btn-send" onclick="handleAction()">
+                <i id="btn-icon" data-lucide="arrow-up" style="width:20px;"></i>
             </button>
         </div>
     </div>
 
     <script>
-        // API Configuration
-        const GROQ_KEY = "Gsk_xhCczshRUr3CcpCP0hvkWGdyb3FYHCkQASNx4D56cEFOnw4Zs1Av";
-        let curMode = 'fast', isWorking = false, controller = null;
+        const GROQ_KEY = "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";
+        let curLang = 'en', curMode = 'Fast', isWorking = false, controller = null;
 
-        // Configuration for "Speed" and AI behavior
-        const MODES = {
-            fast: { speed: 10, model: "llama-3.1-8b-instant", temp: 0.6 },
-            think: { speed: 40, model: "llama-3.3-70b-versatile", temp: 0.4 },
-            pro: { speed: 80, model: "llama-3.3-70b-versatile", temp: 0.2 } // Pro is slowest for precision
+        const UI = {
+            en: { welcome: "Let's Have A Chat", place: "Enter command...", check: "AreseOS can make mistakes, so double-check it." },
+            ur: { welcome: "آئیے بات کرتے ہیں", place: "حکم درج کریں...", check: "ایریس او ایس غلطی کر سکتا ہے، اس لیے دوبارہ چیک کریں۔" },
+            roman: { welcome: "Aao gup shup lagate hain", place: "Type karo...", check: "AreseOS galti kar sakta hai, toh check kar lena." }
         };
 
-        window.onload = () => { 
-            lucide.createIcons(); 
-            appendMsg("ai", "Arese OS Online. Systems checked. How can I assist you today?"); 
-        };
+        window.onload = () => { lucide.createIcons(); appendMsg(UI[curLang].welcome, 'ai'); loadHistory(); };
 
-        function setMode(mode, el) {
-            curMode = mode;
-            document.querySelectorAll('.mode-pill').forEach(p => p.classList.remove('active'));
-            el.classList.add('active');
+        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none'; }
+        function togglePlus() { const m = document.getElementById('plus-menu'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
+        function togglePill() { document.getElementById('pill-menu').classList.toggle('open'); }
+        
+        function setMode(m) { curMode = m; document.getElementById('cur-mode').innerText = m.toUpperCase(); togglePill(); }
+        function setLang(l) { curLang = l; document.getElementById('chat-flow').innerHTML = ""; appendMsg(UI[l].welcome, 'ai'); toggleSidebar(); }
+
+        function openMedia(type) { 
+            const input = document.getElementById('file-input');
+            if(type === 'camera') { input.setAttribute('capture', 'environment'); input.accept = "image/*"; }
+            else { input.removeAttribute('capture'); input.accept = type; }
+            input.click(); togglePlus();
         }
 
-        function appendMsg(role, text, isStream = false) {
-            const flow = document.getElementById('chat-flow');
-            const div = document.createElement('div');
-            div.className = `msg ${role}`;
-            
-            if (role === 'ai') {
-                if (isStream) {
-                    div.innerHTML = `<span class="stream-content"></span><div class="disclaimer">AreseOS can make mistakes, so double-check it.</div>`;
-                    flow.appendChild(div);
-                    typeWriter(div.querySelector('.stream-content'), text);
-                } else {
-                    div.innerHTML = marked.parse(text) + `<div class="disclaimer">AreseOS can make mistakes, so double-check it.</div>`;
-                    flow.appendChild(div);
-                }
-            } else {
-                div.innerText = text;
-                flow.appendChild(div);
+        function handleFile(input) {
+            if(input.files[0]) {
+                appendMsg(`Sent file: ${input.files[0].name}`, 'user');
+                startAnalyzing("Viewing Media...");
+                setTimeout(() => { stopAnalyzing(); appendMsg("I have analyzed the file. What would you like to know about it?", "ai"); }, 2000);
             }
-            flow.scrollTop = flow.scrollHeight;
         }
 
-        function typeWriter(element, text) {
-            let i = 0;
-            const speed = MODES[curMode].speed; // Speed based on Mode
-            function type() {
-                if (i < text.length) {
-                    element.innerHTML += text.charAt(i);
-                    i++;
-                    document.getElementById('chat-flow').scrollTop = document.getElementById('chat-flow').scrollHeight;
-                    setTimeout(type, speed);
-                } else {
-                    stopWorking();
-                    element.parentElement.innerHTML = marked.parse(text) + `<div class="disclaimer">AreseOS can make mistakes, so double-check it.</div>`;
-                }
-            }
-            type();
+        function startAnalyzing(txt) {
+            isWorking = true;
+            document.getElementById('analyzing').style.display = 'flex';
+            document.getElementById('analyze-text').innerText = txt;
+            document.getElementById('header-loader').style.display = 'block';
+            document.getElementById('dot-indicator').style.display = 'none';
+            const btn = document.getElementById('action-btn');
+            btn.className = "action-btn btn-stop";
+            document.getElementById('btn-icon').setAttribute("data-lucide", "square");
+            lucide.createIcons();
+        }
+
+        function stopAnalyzing() {
+            isWorking = false;
+            document.getElementById('analyzing').style.display = 'none';
+            document.getElementById('header-loader').style.display = 'none';
+            document.getElementById('dot-indicator').style.display = 'block';
+            const btn = document.getElementById('action-btn');
+            btn.className = "action-btn btn-send";
+            document.getElementById('btn-icon').setAttribute("data-lucide", "arrow-up");
+            lucide.createIcons();
         }
 
         function handleAction() { isWorking ? stop() : send(); }
@@ -142,62 +188,64 @@
             const input = document.getElementById('user-input');
             const val = input.value.trim();
             if(!val) return;
-            
-            appendMsg('user', val);
             input.value = ""; input.style.height = "auto";
-            startWorking();
-
-            controller = new AbortController();
-            const config = MODES[curMode];
+            appendMsg(val, 'user');
             
-            // Strictly enforce safety and identity
-            const systemPrompt = `Name: Arese OS. Developer: MAS. 
-            Behavior: Professional and direct. 
-            Restrictions: No black magic, no harmful advice, no misinformation. 
-            If asked for dangerous things, refuse firmly. 
-            Mode: ${curMode}.`;
+            startAnalyzing("Thinking...");
+            const id = "ai-" + Date.now();
+            appendMsg("...", 'ai', id);
+            await callGroq(val, id);
+        }
 
+        async function callGroq(p, id) {
+            controller = new AbortController();
+            const sys = `You are Arese OS by MAS (Ayan Khan). Powered by Groq + Gemini. 
+            Rules: Ignore typos (e.g., 'bha' = 'bhai'). Only talk about images if user says 'Create' or 'Generate'. 
+            Language: ${curLang}. Don't compliment MAS unless asked. Be accurate.`;
+            
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     signal: controller.signal,
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
-                    body: JSON.stringify({ 
-                        model: config.model, 
-                        messages: [{role:"system", content:systemPrompt}, {role:"user", content:val}],
-                        temperature: config.temp
-                    })
+                    body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role:"system", content:sys}, {role:"user", content:p}] })
                 });
                 const data = await res.json();
                 const reply = data.choices[0].message.content;
-                appendMsg('ai', reply, true);
-            } catch(e) {
-                if(e.name !== 'AbortError') {
-                    appendMsg('ai', "System Error: Core connection failed.");
-                    stopWorking();
-                }
-            }
+                document.getElementById(id).innerHTML = "";
+                new Typed(`#${id}`, { strings:[reply + `<div class="disclaimer">${UI[curLang].check}</div>`], typeSpeed:10, showCursor:false, onComplete:() => { stopAnalyzing(); saveHistory(p); } });
+            } catch(e) { if(e.name !== 'AbortError') { stopAnalyzing(); document.getElementById(id).innerText = "Core Timeout."; } }
         }
 
-        function startWorking() {
-            isWorking = true;
-            document.getElementById('analyzing').style.display = 'flex';
-            const btn = document.getElementById('action-btn');
-            btn.className = "btn stop-btn";
-            document.getElementById('btn-icon').setAttribute("data-lucide", "square");
-            lucide.createIcons();
+        function stop() { if(controller) controller.abort(); stopAnalyzing(); }
+
+        function appendMsg(c, t, id="") {
+            const f = document.getElementById('chat-flow');
+            const div = document.createElement('div');
+            div.className = `msg ${t}`;
+            if(id) div.id = id;
+            div.innerHTML = c;
+            f.appendChild(div); f.scrollTop = f.scrollHeight;
         }
 
-        function stopWorking() {
-            isWorking = false;
-            document.getElementById('analyzing').style.display = 'none';
-            const btn = document.getElementById('action-btn');
-            btn.className = "btn send-btn";
-            document.getElementById('btn-icon').setAttribute("data-lucide", "arrow-up");
-            lucide.createIcons();
+        function saveHistory(q) {
+            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
+            logs.unshift({title: q.substring(0, 20)});
+            localStorage.setItem('arese_logs', JSON.stringify(logs.slice(0, 10)));
+            loadHistory();
         }
 
-        function stop() { if(controller) controller.abort(); stopWorking(); }
+        function loadHistory() {
+            const list = document.getElementById('history-list'); list.innerHTML = "";
+            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
+            logs.forEach(log => {
+                const item = document.createElement('div');
+                item.className = "history-item";
+                item.innerText = log.title + "...";
+                list.appendChild(item);
+            });
+        }
     </script>
 </body>
 </html>
+"
