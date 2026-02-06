@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese OS v2.1 | Titanium Core</title>
+    <title>Arese OS v2.1 | Titanium</title>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://unpkg.com/marked/marked.min.js"></script>
     <style>
@@ -12,53 +12,55 @@
         body { margin: 0; background: var(--bg); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* SIDEBAR */
-        #sidebar { position: fixed; left: -300px; width: 300px; height: 100%; background: var(--panel); border-right: 1px solid var(--border); z-index: 2000; padding: 20px; display: flex; flex-direction: column; transition: 0.3s ease; }
+        #sidebar { position: fixed; left: -300px; width: 300px; height: 100%; background: var(--panel); border-right: 1px solid var(--border); z-index: 2000; padding: 20px; display: flex; flex-direction: column; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         #sidebar.open { left: 0; box-shadow: 20px 0 50px #000; }
         .new-chat-btn { width: 100%; padding: 12px; background: var(--blue); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 20px; }
         .history-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; }
         .chat-entry { padding: 12px; background: #111; border: 1px solid #222; border-radius: 10px; font-size: 13px; color: #888; display: flex; justify-content: space-between; align-items: center; cursor: pointer; }
+        .chat-entry.active { border-color: var(--blue); color: var(--blue); background: rgba(0,210,255,0.05); }
 
-        /* PILL GLOW */
+        /* GLOWING PILLS */
         .pill-section { margin-top: 15px; border-top: 1px solid #222; padding-top: 15px; }
         .pill-title { font-size: 10px; font-weight: 900; color: #555; margin-bottom: 10px; display: block; letter-spacing: 1px; }
         .pill-container { display: flex; gap: 8px; flex-wrap: wrap; }
-        .pill { flex: 1; padding: 8px 0; background: #000; border: 1px solid #333; border-radius: 20px; text-align: center; font-size: 11px; font-weight: bold; color: #666; cursor: pointer; }
+        .pill { flex: 1; padding: 8px 0; background: #000; border: 1px solid #333; border-radius: 20px; text-align: center; font-size: 11px; font-weight: bold; color: #666; cursor: pointer; transition: 0.2s ease; }
         .pill.active { 
             border-color: var(--blue); 
             color: var(--blue); 
             background: rgba(0,210,255,0.1); 
-            box-shadow: 0 0 15px rgba(0,210,255,0.5); 
+            box-shadow: 0 0 15px rgba(0,210,255,0.6); 
             text-shadow: 0 0 8px var(--blue);
         }
 
         /* HEADER */
-        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: var(--bg); }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: var(--bg); position: sticky; top: 0; z-index: 100; }
+        .brand-main { font-weight: 900; font-size: 14px; letter-spacing: 1.5px; }
 
-        /* CHAT */
+        /* CHAT AREA */
         #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
-        .msg { max-width: 88%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; }
+        .msg { max-width: 85%; padding: 12px 16px; border-radius: 18px; font-size: 15px; line-height: 1.5; word-wrap: break-word; }
         .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
         .ai { align-self: flex-start; background: #111; border: 1px solid #222; border-bottom-left-radius: 4px; color: #e0e0e0; }
 
-        /* ANALYZING ANIMATION */
-        .analyzing-box { display: flex; align-items: center; gap: 12px; color: var(--blue); font-weight: bold; font-size: 13px; }
-        .loader-ring { 
-            width: 18px; height: 18px; border: 2px solid rgba(0,210,255,0.2); 
+        /* ANALYZING FEEDBACK */
+        .anal-box { display: flex; align-items: center; gap: 10px; color: var(--blue); font-weight: 700; font-size: 13px; }
+        .ring { 
+            width: 16px; height: 16px; border: 2px solid rgba(0,210,255,0.2); 
             border-top: 2px solid var(--blue); border-radius: 50%; 
             animation: spin 0.8s linear infinite; 
             box-shadow: 0 0 10px var(--blue);
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* INPUT */
-        .controls { padding: 10px 15px 20px; background: var(--bg); }
-        .input-box { background: #111; border-radius: 25px; border: 1px solid #222; display: flex; align-items: flex-end; padding: 8px 15px; gap: 10px; }
+        /* INPUT AREA */
+        .controls { padding: 10px 15px 25px; background: var(--bg); }
+        .input-box { background: #111; border-radius: 25px; border: 1px solid #222; display: flex; align-items: flex-end; padding: 6px 15px; gap: 10px; }
         textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; padding: 10px 0; font-size: 16px; max-height: 120px; }
-        .icon-btn { width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; border: none; }
+        .icon-btn { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 50%; cursor: pointer; border: none; }
         .send-btn { background: var(--blue); color: #000; }
         .stop-btn { background: var(--red); color: #fff; }
         
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); display: none; z-index: 1500; }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; }
     </style>
 </head>
 <body>
@@ -66,7 +68,7 @@
     <div id="overlay" onclick="toggleSidebar()"></div>
 
     <div id="sidebar">
-        <h3 style="margin-bottom:20px; font-size:16px; color:var(--blue);">ARESE OS</h3>
+        <h3 style="margin-bottom:20px; font-size:16px; color:var(--blue); letter-spacing:1px;">ARESE MENU</h3>
         <button class="new-chat-btn" onclick="startNewChat()">
             <i data-lucide="plus-circle"></i> NEW CHAT
         </button>
@@ -93,12 +95,15 @@
 
     <header>
         <i data-lucide="more-horizontal" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-        <div style="font-weight:900; letter-spacing:1px; font-size:14px;">ARESE OS CORE</div>
+        <div class="brand-main">ARESE OS CORE</div>
         <div style="width:24px"></div>
     </header>
 
     <div id="chat-flow"></div>
-    <div style="text-align:center; font-size:10px; color:#444; padding:8px;">AreseOS can make mistakes, so double-check it.</div>
+    
+    <div style="text-align:center; font-size:10px; color:#444; padding:8px;" id="disclaim">
+        AreseOS can make mistakes, so double-check it.
+    </div>
 
     <div class="controls">
         <div class="input-box">
@@ -110,21 +115,20 @@
     </div>
 
     <script>
-        const GROQ_KEY = "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";
+        const GROQ_KEY = "Gsk_xhCczshRUr3CcpCP0hvkWGdyb3FYHCkQASNx4D56cEFOnw4Zs1Av";
         let chats = JSON.parse(localStorage.getItem('arese_chats') || "[]");
         let activeId = null, currentLang = 'en', currentMode = 'fast', isGen = false, abort = null;
 
         const UI = {
-            en: { welcome: "Lets Have A Chat", anal: "Analyzing core..." },
-            ur: { welcome: "آئیے بات کرتے ہیں", anal: "تجزیہ کیا جا رہا ہے..." },
-            roman: { welcome: "Aao Baat Karte Hain", anal: "Analyzing ho raha hai..." }
+            en: { welcome: "Lets Have A Chat", anal: "Analyzing core...", dis: "AreseOS can make mistakes, so double-check it." },
+            ur: { welcome: "آئیے بات کرتے ہیں", anal: "تجزیہ کیا جا رہا ہے...", dis: "ایریس غلطی کر سکتا ہے، تصدیق کر لیں۔" },
+            roman: { welcome: "Aao Baat Karte Hain", anal: "Analyzing ho raha hai...", dis: "AreseOS galti kar sakta hai, check kar lena." }
         };
 
         window.onload = () => { lucide.createIcons(); if(chats.length > 0) loadChat(chats[0].id); else startNewChat(); };
 
         function toggleSidebar() { 
-            const s = document.getElementById('sidebar');
-            const o = document.getElementById('overlay');
+            const s = document.getElementById('sidebar'), o = document.getElementById('overlay');
             s.classList.toggle('open');
             o.style.display = s.classList.contains('open') ? 'block' : 'none';
         }
@@ -133,6 +137,7 @@
             currentLang = l;
             document.querySelectorAll('[id^="pill-"]').forEach(p => p.classList.remove('active'));
             document.getElementById('pill-'+l).classList.add('active');
+            document.getElementById('disclaim').innerText = UI[l].dis;
         }
 
         function setMode(m) {
@@ -175,8 +180,8 @@
             const flow = document.getElementById('chat-flow'), div = document.createElement('div');
             div.className = `msg ${role}`;
             if(isAnalyzing) {
-                div.id = "temp-anal";
-                div.innerHTML = `<div class="analyzing-box"><div class="loader-ring"></div><span>${UI[currentLang].anal}</span></div>`;
+                div.id = "anal-temp";
+                div.innerHTML = `<div class="anal-box"><div class="ring"></div>${UI[currentLang].anal}</div>`;
             } else {
                 div.innerHTML = role === 'ai' ? marked.parse(text) : text;
             }
@@ -200,23 +205,26 @@
         async function apiCall(chatObj) {
             abort = new AbortController();
             let model = currentMode === 'pro' ? "llama-3.3-70b-versatile" : "llama-3.1-8b-instant";
-            let sys = `You are Arese OS. Language: ${currentLang}. Mode: ${currentMode}. Respond with wit and precision.`;
-            let history = chatObj.messages.slice(-6).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+            let sys = `You are Arese OS Core. Dev: Muhammad-Ayan-Khan. Language: ${currentLang}. Mode: ${currentMode}. 
+            Be professional, witty, and helpful. Ignore minor typos.`;
+            let history = chatObj.messages.slice(-8).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
 
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST", signal: abort.signal,
                     headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
-                    body: JSON.stringify({ model, messages: [{role:"system", content:sys}, ...history] })
+                    body: JSON.stringify({ model, messages: [{role:"system", content:sys}, ...history], temperature: 0.7 })
                 });
                 const data = await res.json();
+                if(data.error) throw new Error(data.error.message);
                 const reply = data.choices[0].message.content;
-                document.getElementById('temp-anal').remove();
+                const temp = document.getElementById('anal-temp'); if(temp) temp.remove();
                 chatObj.messages.push({ role: 'ai', text: reply });
                 save(); appendUI('ai', reply);
             } catch (e) {
                 if(e.name !== 'AbortError') {
-                    document.getElementById('temp-anal').innerHTML = "Core Connection Failure. Try again.";
+                    const temp = document.getElementById('anal-temp');
+                    if(temp) temp.innerHTML = `<span style="color:var(--red)">Core Error: ${e.message}</span>`;
                 }
             } finally { setLoad(false); }
         }
@@ -229,8 +237,7 @@
             lucide.createIcons();
         }
 
-        function stop() { if(abort) abort.abort(); setLoad(false); if(document.getElementById('temp-anal')) document.getElementById('temp-anal').remove(); }
+        function stop() { if(abort) abort.abort(); setLoad(false); const t = document.getElementById('anal-temp'); if(t) t.remove(); }
     </script>
 </body>
-    </html>
-    
+</html>
