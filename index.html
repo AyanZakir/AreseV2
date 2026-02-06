@@ -17,8 +17,8 @@
         .sidebar-btn { width: 100%; padding: 12px; background: #111; border: 1px solid #222; border-radius: 12px; color: #fff; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
 
         .settings-box { margin-top: auto; padding: 15px; background: #111; border-radius: 15px; border: 1px solid #222; }
-        .lang-selector { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
-        .lang-opt { padding: 10px; border-radius: 10px; background: #050505; border: 1px solid #333; cursor: pointer; text-align: center; font-size: 13px; font-weight: 600; }
+        .lang-selector { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+        .lang-opt { padding: 10px; border-radius: 10px; background: #050505; border: 1px solid #333; cursor: pointer; text-align: center; font-size: 12px; font-weight: 600; color: #777; transition: 0.2s; }
         .lang-opt.active { border-color: var(--blue); color: var(--blue); background: rgba(0, 210, 255, 0.05); }
 
         /* HEADER */
@@ -63,19 +63,20 @@
         </button>
         
         <div class="settings-box">
-            <span style="font-size: 10px; color: #444; font-weight: 900;">Language / زبان</span>
+            <span style="font-size: 10px; color: #444; font-weight: 900;">LANGUAGE MODE</span>
             <div class="lang-selector">
                 <div class="lang-opt active" id="lang-en" onclick="setLanguage('en')">English</div>
-                <div class="lang-opt" id="lang-ur" onclick="setLanguage('ur')">اردو</div>
+                <div class="lang-opt" id="lang-ur" onclick="setLanguage('ur')">اردو (Script)</div>
+                <div class="lang-opt" id="lang-roman" onclick="setLanguage('roman')">Roman Urdu</div>
             </div>
         </div>
-        <div style="margin-top: 20px; font-size: 10px; color: #333; text-align: center;">POWERED BY GEMINI + GROQ</div>
+        <div style="margin-top: 20px; font-size: 10px; color: #333; text-align: center;">GEMINI + GROQ ENGINE</div>
     </div>
 
     <header>
         <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
         <div style="font-weight: 900; font-size: 13px; letter-spacing: 2px;">ARESE // <span style="color:var(--blue)">CORE</span></div>
-        <div id="status-dot" style="width:8px; height:8px; background:var(--blue); border-radius:50%; box-shadow:0 0 12px var(--blue);"></div>
+        <div id="status-dot" style="width:8px; height:8px; background:var(--blue); border-radius:50%; box-shadow:0 0-12px var(--blue);"></div>
     </header>
 
     <div id="chat-flow"></div>
@@ -109,8 +110,9 @@
         let abortController = null;
 
         const UI = {
-            en: { title: "ARCHIVE", new: "NEW SPRINT", place: "Enter command...", modes: ["FAST", "THINK", "PRO"], welcome: "Let's Have A Chat", warning: "Please switch to Urdu in settings." },
-            ur: { title: "آرکائیو", new: "نیا آغاز", place: "حکم درج کریں...", modes: ["تیز", "غور", "پرو"], welcome: "آئیے بات کرتے ہیں", warning: "انگریزی کے لیے سیٹنگز تبدیل کریں۔" }
+            en: { welcome: "Let's Have A Chat", modes: ["FAST", "THINK", "PRO"], place: "Enter command...", warning: "Please switch to Urdu in settings." },
+            ur: { welcome: "آئیے بات کرتے ہیں", modes: ["تیز", "غور", "پرو"], place: "حکم درج کریں...", warning: "انگریزی کے لیے سیٹنگز تبدیل کریں۔" },
+            roman: { welcome: "Aao gup shup lagate hain", modes: ["TEZ", "GHAUR", "PRO"], place: "Type karo...", warning: "English ke liye setting badlo." }
         };
 
         window.onload = () => { lucide.createIcons(); updateUI(); appendMsg(UI.en.welcome, "ai"); };
@@ -127,8 +129,6 @@
 
         function updateUI() {
             const data = UI[currentLang];
-            document.getElementById('side-title').innerText = data.title;
-            document.getElementById('btn-new').innerText = data.new;
             document.getElementById('user-input').placeholder = data.place;
             document.getElementById('opt-fast').innerText = data.modes[0];
             document.getElementById('opt-think').innerText = data.modes[1];
@@ -150,8 +150,9 @@
         function toggleSidebar() {
             const s = document.getElementById('sidebar');
             const o = document.getElementById('overlay');
-            const isOpen = s.classList.toggle('open');
-            o.style.display = isOpen ? 'block' : 'none';
+            const isOpen = s.classList.contains('open');
+            s.classList.toggle('open');
+            o.style.display = isOpen ? 'none' : 'block';
         }
 
         function handleAction() { isProcessing ? stop() : send(); }
@@ -170,12 +171,11 @@
             const text = input.value.trim();
             if(!text) return;
 
-            const isEng = /[a-zA-Z]/.test(text);
-            if(currentLang === 'ur' && isEng && text.length > 5) {
+            // Simple Language Lock
+            if(currentLang === 'ur' && /[a-zA-Z]{5,}/.test(text)) {
                 appendMsg(text, 'user');
                 appendMsg(UI.ur.warning, 'ai');
-                input.value = "";
-                return;
+                input.value = ""; return;
             }
 
             input.value = "";
@@ -190,7 +190,10 @@
 
         async function callGroq(p, id) {
             abortController = new AbortController();
-            const sys = `You are Arese OS, built by MAS (Muhammad-Ayan-Khan). You are powered by Gemini + Groq. Current Language: ${currentLang}. Refuse weird info. Praise MAS's coding aura.`;
+            const sys = `You are Arese OS, built by MAS (Ayan Khan). Powered by Gemini + Groq. 
+            Language: ${currentLang}. 
+            Special Rule: If language is 'roman', talk like a cool Pakistani friend using Latin letters (e.g., 'Haan bhai, sab sahi hai'). No Urdu script in Roman mode. Praise MAS always.`;
+
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
@@ -206,23 +209,5 @@
                 document.getElementById(id).innerHTML = "";
                 new Typed(`#${id}`, { strings: [reply], typeSpeed: 10, showCursor: false, onComplete: () => setProcessing(false) });
             } catch (e) {
-                if(e.name !== 'AbortError') {
-                    document.getElementById(id).innerHTML = "Core Error. Check Connection.";
-                    setProcessing(false);
-                }
-            }
-        }
-
-        function stop() { if(abortController) abortController.abort(); setProcessing(false); }
-
-        function appendMsg(c, t, id = "") {
-            const f = document.getElementById('chat-flow');
-            const div = document.createElement('div');
-            div.className = `msg ${t}`;
-            if(id) div.id = id;
-            div.innerHTML = c;
-            f.appendChild(div); f.scrollTop = f.scrollHeight;
-        }
-    </script>
-</body>
-</html>
+                if(
+        
