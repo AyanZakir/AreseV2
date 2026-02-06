@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Arese OS v2.1 | Titanium</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/marked/marked.min.js"></script> <style>
+    <script src="https://unpkg.com/marked/marked.min.js"></script>
+    <style>
         :root { --blue: #00d2ff; --bg: #050505; --panel: #0a0a0a; --border: #1f1f1f; --red: #ff4b2b; }
         * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
@@ -94,8 +95,7 @@
             <i data-lucide="plus-circle"></i> NEW CHAT
         </button>
         
-        <div class="history-list" id="history-list">
-            </div>
+        <div class="history-list" id="history-list"></div>
 
         <div class="lang-section">
             <span class="lang-title">LANGUAGE</span>
@@ -113,7 +113,8 @@
             <div class="brand-main">ARESE OS</div>
             <div class="brand-sub">GEMINI + GROQ</div>
         </div>
-        <div style="width:24px"></div> </header>
+        <div style="width:24px"></div> 
+    </header>
 
     <div id="chat-flow"></div>
 
@@ -122,7 +123,6 @@
     </div>
 
     <div class="controls">
-        
         <div id="media-preview">
             <img id="preview-img" src="" alt="">
             <span id="preview-name">image.jpg</span>
@@ -148,17 +148,16 @@
         let chats = JSON.parse(localStorage.getItem('arese_chats') || "[]");
         let activeChatId = null;
         let currentLang = 'en';
-        let currentImage = null; // Base64 storage
+        let currentImage = null; 
         let isGenerating = false;
         let abortCtrl = null;
 
         const UI = {
-            en: { placeholder: "Message Arese...", disclaim: "AreseOS can make mistakes, so double-check it." },
-            ur: { placeholder: "ایریس سے بات کریں...", disclaim: "ایریس غلطی کر سکتا ہے، تصدیق کر لیں۔" },
-            roman: { placeholder: "Bhai baat karo...", disclaim: "AreseOS galti kar sakta hai, check kar lena." }
+            en: { welcome: "Lets Have A Chat", placeholder: "Message Arese...", disclaim: "AreseOS can make mistakes, so double-check it." },
+            ur: { welcome: "آئیے بات کرتے ہیں", placeholder: "ایریس سے بات کریں...", disclaim: "ایریس غلطی کر سکتا ہے، تصدیق کر لیں۔" },
+            roman: { welcome: "Aao Baat Karte Hain", placeholder: "Bhai baat karo...", disclaim: "AreseOS galti kar sakta hai, check kar lena." }
         };
 
-        // --- INIT ---
         window.onload = () => {
             lucide.createIcons();
             loadHistoryUI();
@@ -169,7 +168,6 @@
         function resizeBox(el) { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; }
         function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none'; }
 
-        // --- LANGUAGE PILLS ---
         function setLang(l) {
             currentLang = l;
             document.querySelectorAll('.l-pill').forEach(p => p.classList.remove('active'));
@@ -178,13 +176,12 @@
             document.getElementById('disclaimer-text').innerText = UI[l].disclaim;
         }
 
-        // --- MEDIA HANDLING ---
         function handleFile(input) {
             const file = input.files[0];
             if(!file) return;
             const reader = new FileReader();
             reader.onload = (e) => {
-                currentImage = e.target.result; // Base64
+                currentImage = e.target.result;
                 document.getElementById('preview-img').src = currentImage;
                 document.getElementById('preview-name').innerText = file.name;
                 document.getElementById('media-preview').style.display = 'flex';
@@ -198,10 +195,9 @@
             document.getElementById('media-preview').style.display = 'none';
         }
 
-        // --- CHAT LOGIC ---
         function startNewChat() {
             activeChatId = Date.now();
-            chats.unshift({ id: activeChatId, title: "New Chat", messages: [] });
+            chats.unshift({ id: activeChatId, title: "New Chat", messages: [{ role: 'ai', text: UI[currentLang].welcome }] });
             saveChats();
             loadHistoryUI();
             renderChatArea();
@@ -211,7 +207,7 @@
         function loadChat(id) {
             activeChatId = id;
             renderChatArea();
-            loadHistoryUI(); // Highlight active
+            loadHistoryUI();
             if(window.innerWidth < 768 && document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
 
@@ -249,45 +245,31 @@
             const flow = document.getElementById('chat-flow');
             const div = document.createElement('div');
             div.className = `msg ${role}`;
-            
-            // Format content
             let content = text;
-            if(role === 'ai') content = marked.parse(text); // Render Markdown/Code
-
+            if(role === 'ai') content = marked.parse(text);
             if(img) div.innerHTML = `<img src="${img}"><br>${content}`;
             else div.innerHTML = content;
-            
             flow.appendChild(div);
             flow.scrollTop = flow.scrollHeight;
         }
 
-        // --- SENDING ---
         function handleSend() {
             if(isGenerating) return stop();
-            
             const input = document.getElementById('user-input');
             const txt = input.value.trim();
             if(!txt && !currentImage) return;
-
-            // Add to UI & Data
             const chat = chats.find(x => x.id === activeChatId);
             chat.messages.push({ role: 'user', text: txt, img: currentImage });
             appendUI('user', txt, currentImage);
-
-            // Auto-Title
-            if(chat.messages.length === 1 && txt) {
+            if(chat.title === "New Chat" && txt) {
                 chat.title = txt.substring(0, 20) + "...";
                 loadHistoryUI();
             }
             saveChats();
-
-            // Prepare Payload
-            const imgData = currentImage; // Store for api call
+            const imgData = currentImage;
             clearMedia();
             input.value = "";
             resizeBox(input);
-
-            // Set Loading
             setLoading(true, !!imgData);
             apiCall(chat, txt, imgData);
         }
@@ -296,13 +278,10 @@
             isGenerating = state;
             const btn = document.getElementById('send-btn');
             const icon = document.getElementById('send-icon');
-            
             if(state) {
                 btn.classList.replace('send-btn', 'stop-btn');
                 icon.setAttribute('data-lucide', 'square');
-                if(isVision) {
-                    document.getElementById('analyze-overlay').style.display = 'flex';
-                }
+                if(isVision) document.getElementById('analyze-overlay').style.display = 'flex';
             } else {
                 btn.classList.replace('stop-btn', 'send-btn');
                 icon.setAttribute('data-lucide', 'arrow-up');
@@ -313,79 +292,48 @@
 
         async function apiCall(chatObject, userTxt, userImg) {
             abortCtrl = new AbortController();
-            
-            // Determine Model & Messages
             let model = "llama-3.3-70b-versatile";
             let messages = [];
-
-            // System Prompt
-            const sysPrompt = `You are Arese OS. Developed by MAS. Powered by Gemini + Groq. 
-            Language: ${currentLang}. 
-            Traits: Helpful, Witty, Expert Coder. 
-            Instructions: If user asks for code, write clean code blocks. If user sends image, analyze it detail. 
-            Note: User is a friend.`;
+            const sysPrompt = `You are Arese OS. Developed by MAS. Powered by Gemini + Groq. Language: ${currentLang}. 
+            Expertise: Professional document writing, Application (Darkhas) drafting, expert coding, and vision analysis.
+            Rules: If asked for an application, provide a formal structure. If an image is sent, analyze it meticulously. Respond as a helpful friend. Ignore typos.`;
 
             if(userImg) {
-                // VISION CALL
-                model = "llama-3.2-90b-vision-preview"; // Groq Vision Model
+                model = "llama-3.2-90b-vision-preview";
                 messages = [
                     { role: "system", content: sysPrompt },
-                    { 
-                        role: "user", 
-                        content: [
-                            { type: "text", text: userTxt || "Analyze this image." },
-                            { type: "image_url", image_url: { url: userImg } }
-                        ] 
-                    }
+                    { role: "user", content: [
+                        { type: "text", text: userTxt || "Analyze this carefully." },
+                        { type: "image_url", image_url: { url: userImg } }
+                    ]}
                 ];
             } else {
-                // TEXT HISTORY CONTEXT
                 messages = [{ role: "system", content: sysPrompt }];
-                // Add last 6 messages for memory
-                const recent = chatObject.messages.slice(-6); 
-                recent.forEach(m => {
-                    if(!m.img) messages.push({ role: m.role, content: m.text }); // Vision history is tricky on standard API
-                });
+                const recent = chatObject.messages.slice(-8); 
+                recent.forEach(m => { if(!m.img) messages.push({ role: m.role, content: m.text }); });
             }
 
             try {
                 const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     signal: abortCtrl.signal,
-                    headers: { 
-                        "Content-Type": "application/json", 
-                        "Authorization": `Bearer ${GROQ_KEY}` 
-                    },
-                    body: JSON.stringify({
-                        model: model,
-                        messages: messages,
-                        temperature: 0.7
-                    })
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
+                    body: JSON.stringify({ model: model, messages: messages, temperature: 0.7 })
                 });
-
                 const data = await res.json();
                 if(data.error) throw new Error(data.error.message);
-                
                 const reply = data.choices[0].message.content;
-                
-                // Save & Render
                 chatObject.messages.push({ role: 'ai', text: reply });
                 saveChats();
                 appendUI('ai', reply);
             } catch (err) {
-                if(err.name !== 'AbortError') {
-                    appendUI('ai', `System Error: ${err.message}`);
-                }
+                if(err.name !== 'AbortError') appendUI('ai', `System Error: ${err.message}`);
             } finally {
                 setLoading(false);
             }
         }
 
-        function stop() {
-            if(abortCtrl) abortCtrl.abort();
-            setLoading(false);
-        }
-
+        function stop() { if(abortCtrl) abortCtrl.abort(); setLoading(false); }
     </script>
 </body>
 </html>
