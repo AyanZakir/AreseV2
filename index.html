@@ -16,240 +16,246 @@
         #chat-flow::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
 
         /* SIDEBAR */
-        #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; height: 100%; transition: 0.4s cubic-bezier(0.4, 0, 0.2, 1); z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
-        #sidebar.open { left: 0; box-shadow: 20px 0 60px #000; }
-        .new-chat-btn { width: 100%; padding: 14px; background: var(--blue); color: #000; border: none; border-radius: 12px; font-weight: 800; cursor: pointer; margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 8px; }
-        .history-item { padding: 12px; background: #111; border: 1px solid #222; border-radius: 10px; font-size: 13px; color: #888; cursor: pointer; display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        #sidebar { width: 280px; background: #080808; border-right: 1px solid var(--border); position: fixed; left: -280px; top: 0; bottom: 0; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 1000; display: flex; flex-direction: column; padding: 20px; }
+        #sidebar.open { left: 0; }
+        #sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; }
+        #sidebar-overlay.show { display: block; }
 
-        /* MAIN APP */
-        #app { flex: 1; display: flex; flex-direction: column; height: 100%; position: relative; }
-        #header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; background: #080808; border-bottom: 1px solid var(--border); }
+        .sidebar-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; }
+        .new-chat-btn { background: var(--glass); border: 1px solid var(--blue); color: var(--blue); padding: 12px; border-radius: 10px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+        .history-list { flex: 1; overflow-y: auto; margin-top: 20px; }
+        .history-item { padding: 12px; border-radius: 8px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; justify-content: space-between; font-size: 14px; color: #aaa; transition: 0.2s; border: 1px solid transparent; }
+        .history-item:hover { background: rgba(255,255,255,0.05); color: #fff; border-color: #333; }
 
-        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; }
+        /* MAIN CONTENT */
+        #main { flex: 1; display: flex; flex-direction: column; position: relative; width: 100%; height: 100%; }
 
-        /* MESSAGES */
-        .msg-container { display: flex; width: 100%; gap: 12px; }
-        .user-side { justify-content: flex-end; }
-        .ai-avatar { position: relative; width: 38px; height: 38px; flex-shrink: 0; }
-        .ring { position: absolute; width: 100%; height: 100%; border: 2px solid transparent; border-top: 2px solid var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .msg { max-width: 85%; padding: 14px 18px; border-radius: 20px; font-size: 15px; line-height: 1.6; word-wrap: break-word; }
-        .ai { background: var(--glass); border: 1px solid rgba(0,210,255,0.2); color: var(--blue); border-top-left-radius: 4px; }
-        .user { background: #1a1a1a; border: 1px solid #333; border-top-right-radius: 4px; color: #eee; }
-        .media-content { width: 100%; border-radius: 12px; margin-top: 8px; border: 1px solid #333; }
+        /* NAVBAR */
+        nav { padding: 15px 20px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border); background: rgba(11,11,11,0.8); backdrop-filter: blur(10px); z-index: 100; }
+        .logo { font-size: 18px; font-weight: 800; letter-spacing: 2px; color: var(--blue); display: flex; align-items: center; gap: 10px; }
 
-        /* DYNAMIC CONTROLS */
-        .controls { padding: 10px 15px 35px; background: #080808; border-top: 1px solid var(--border); }
-        .bar { display: flex; gap: 10px; align-items: center; background: #151515; padding: 6px 15px; border-radius: 30px; border: 1px solid #222; }
-        textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; font-size: 16px; padding: 8px 0; }
+        /* CHAT AREA */
+        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 20px; padding-bottom: 100px; }
+        .msg { max-width: 85%; padding: 15px; border-radius: 15px; font-size: 15px; line-height: 1.6; position: relative; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         
-        #action-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; }
-        .btn-send { background: var(--blue); }
-        .btn-stop { background: #ff4b2b; }
+        .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 500; border-bottom-right-radius: 2px; }
+        .ai { align-self: flex-start; background: var(--glass); border: 1px solid var(--border); border-bottom-left-radius: 2px; }
 
-        /* POP MENUS */
-        .pop-menu { position: absolute; bottom: 85px; background: #1a1a1a; border: 1px solid #333; border-radius: 12px; display: none; flex-direction: column; width: 180px; z-index: 3000; box-shadow: 0 10px 40px #000; overflow: hidden; animation: slideUp 0.3s ease; }
-        @keyframes slideUp { from { transform: translateY(10px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-        
-        .menu-item { padding: 14px; display: flex; align-items: center; gap: 12px; font-size: 14px; cursor: pointer; color: #ccc; transition: 0.2s; }
-        .menu-item:hover { background: #222; color: #fff; }
-        .active-circle { width: 8px; height: 8px; background: var(--blue); border-radius: 50%; box-shadow: 0 0 8px var(--blue); }
+        .media-content { width: 100%; border-radius: 10px; margin-top: 10px; border: 1px solid var(--border); }
+
+        /* INPUT AREA */
+        #input-container { position: absolute; bottom: 0; width: 100%; padding: 20px; background: linear-gradient(transparent, var(--bg) 40%); }
+        .input-wrapper { background: #161616; border: 1px solid var(--border); border-radius: 20px; display: flex; align-items: center; padding: 5px 15px; transition: 0.3s; }
+        .input-wrapper:focus-within { border-color: var(--blue); box-shadow: 0 0 15px rgba(0,210,255,0.1); }
+        input { flex: 1; background: transparent; border: none; color: #fff; padding: 12px; font-size: 15px; }
+        .send-btn { background: var(--blue); color: #000; border: none; width: 38px; height: 38px; border-radius: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: 0.2s; }
+        .send-btn:active { transform: scale(0.9); }
+
+        /* MODE SELECTOR */
+        .mode-chips { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .mode-chips::-webkit-scrollbar { display: none; }
+        .chip { padding: 6px 15px; border-radius: 20px; background: #1a1a1a; border: 1px solid var(--border); font-size: 12px; font-weight: 600; cursor: pointer; transition: 0.2s; white-space: nowrap; }
+        .chip.active { background: var(--blue); color: #000; border-color: var(--blue); }
+
+        /* LOADING RING */
+        .ring { width: 18px; height: 18px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* TYPING EFFECT FIX */
+        .typed-cursor { color: var(--blue); font-size: 18px; }
     </style>
 </head>
 <body>
 
-    <input type="file" id="h-input" hidden onchange="processMedia(this)">
-
+    <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
     <div id="sidebar">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-            <b style="color:var(--blue); font-size:22px;">ARESE LOGS</b>
-            <i data-lucide="x" onclick="toggleSidebar()" style="cursor:pointer;"></i>
+        <div class="sidebar-header">
+            <div class="logo"><i data-lucide="shield"></i> ARCHIVE</div>
+            <i data-lucide="x" onclick="toggleSidebar()" style="cursor:pointer"></i>
         </div>
-        <button class="new-chat-btn" onclick="startNewSession()"><i data-lucide="plus"></i> New Chat</button>
-        <div class="history-item" onclick="window.location.href='arese_vision.html'" style="border-color:var(--blue); color:var(--blue);">
-            <span><i data-lucide="sparkles" style="width:14px;"></i> Arese Vision</span>
-        </div>
-        <div id="history-list" class="history-list" style="overflow-y:auto;"></div>
+        <button class="new-chat-btn" onclick="startNewSession()">
+            <i data-lucide="plus"></i> NEW SPRINT
+        </button>
+        <div id="history-list" class="history-list"></div>
     </div>
 
-    <div id="app">
-        <div id="header">
-            <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-            <b style="color:var(--blue); font-size:14px; letter-spacing:1px;">ARESE OS v2.5</b>
-            <i data-lucide="cpu" style="color:#555; width:18px;"></i>
-        </div>
+    <div id="main">
+        <nav>
+            <i data-lucide="menu" onclick="toggleSidebar()" style="cursor:pointer"></i>
+            <div class="logo">ARESE <span style="color:#fff">2.5</span></div>
+            <i data-lucide="cpu" style="color:var(--blue)"></i>
+        </nav>
 
         <div id="chat-flow"></div>
 
-        <div id="plus-menu" class="pop-menu" style="left:20px;">
-            <div class="menu-item" onclick="triggerH('image/*', true)"><i data-lucide="camera" style="color:red;"></i> Camera</div>
-            <div class="menu-item" onclick="triggerH('image/*', false)"><i data-lucide="image" style="color:green;"></i> Gallery</div>
-            <div class="menu-item" onclick="triggerH('video/*', false)"><i data-lucide="video" style="color:blue;"></i> Video</div>
-            <div class="menu-item" onclick="triggerH('audio/*', false)"><i data-lucide="mic" style="color:orange;"></i> Audio</div>
-        </div>
-
-        <div id="mode-menu" class="pop-menu" style="right:20px; width:150px;">
-            <div class="menu-item" onclick="setMode('Fast')"><div id="dot-Fast" class="active-circle"></div> Fast</div>
-            <div class="menu-item" onclick="setMode('Think')"><div id="dot-Think" style="width:8px;"></div> Think</div>
-            <div class="menu-item" onclick="setMode('Pro')"><div id="dot-Pro" style="width:8px;"></div> Pro</div>
-        </div>
-
-        <div class="controls">
-            <div class="bar">
-                <i data-lucide="plus" onclick="togglePop('plus-menu')" style="cursor:pointer; color:#777;"></i>
-                <textarea id="user-input" placeholder="Enter command..." rows="1"></textarea>
-                <div id="mode-trigger" style="color:var(--blue); font-size:10px; font-weight:900; cursor:pointer;" onclick="togglePop('mode-menu')">FAST</div>
-                <button id="action-btn" class="btn-send" onclick="handleAction()">
-                    <i id="btn-icon" data-lucide="arrow-up" style="width:18px; color:#000;"></i>
+        <div id="input-container">
+            <div class="mode-chips">
+                <div class="chip active" onclick="setMode('Fast', this)">FAST</div>
+                <div class="chip" onclick="setMode('Think', this)">THINK</div>
+                <div class="chip" onclick="setMode('Pro', this)">PRO</div>
+            </div>
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="Enter command..." onkeypress="handleKey(event)">
+                <div id="main-ring" class="ring" style="margin-right:10px"></div>
+                <button class="send-btn" onclick="sendMessage()">
+                    <i data-lucide="send" style="width:18px"></i>
                 </button>
             </div>
         </div>
     </div>
 
     <script>
-        let isProcessing = false;
+        // UPDATED API CONFIGURATION (VERSION 1.4)
+        const GOOGLE_API_KEY = "AIzaSyAlFcozmcW000eu091Xr3q_m4iwytUdWvw";
+        
         let currentMode = 'Fast';
+        let isProcessing = false;
         let chatHistory = [];
-        let abortController = null;
         let typedInstance = null;
+        let abortController = null;
 
-        const GROQ_KEY = "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";
+        lucide.createIcons();
 
-        const CORE_PROMPT = "You are Arese OS v2.5. Dev: Muhammad-Ayan-Khan. " +
-        "Identity Info: ONLY if asked, say 'I was developed by Muhammad-Ayan-Khan, who built me at 14.' " +
-        "Safety: If asked about suicide, 18+ content, or black magic, strictly say: 'I am sorry, I cannot assist with that request due to security protocols.' " +
-        "Use emojis, be witty, and stay professional.";
-
-        window.onload = () => { lucide.createIcons(); startNewSession(); refreshHistory(); };
-
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); }
-        function togglePop(id) {
-            const el = document.getElementById(id);
-            const isVis = el.style.display === "flex";
-            document.querySelectorAll('.pop-menu').forEach(m => m.style.display = "none");
-            el.style.display = isVis ? "none" : "flex";
+        function setMode(mode, el) {
+            currentMode = mode;
+            document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+            el.classList.add('active');
         }
 
-        function setMode(m) {
-            currentMode = m;
-            document.getElementById('mode-trigger').innerText = m.toUpperCase();
-            document.querySelectorAll('.active-circle').forEach(c => c.className = "");
-            document.getElementById('dot-'+m).className = "active-circle";
-            togglePop('mode-menu');
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('open');
+            document.getElementById('sidebar-overlay').classList.toggle('show');
+            if(document.getElementById('sidebar').classList.contains('open')) refreshHistory();
         }
 
-        function triggerH(acc, cam) {
-            const i = document.getElementById('h-input');
-            i.accept = acc;
-            if(cam) i.setAttribute("capture", "environment"); else i.removeAttribute("capture");
-            i.click(); togglePop('plus-menu');
-        }
-
-        // --- MEDIA BRIDGE FIX ---
-        function processMedia(input) {
-            if(input.files && input.files[0]) {
-                const file = input.files[0];
-                const url = URL.createObjectURL(file);
-                let content = "";
-                
-                if(file.type.startsWith('image')) content = `<img src="${url}" class="media-content">`;
-                else if(file.type.startsWith('video')) content = `<video src="${url}" controls class="media-content"></video>`;
-                else content = `<div class="media-content" style="padding:10px; background:#222;">File: ${file.name}</div>`;
-
-                appendMsg(content, 'user');
-                setTimeout(() => appendMsg("System has received the hardware data. Analyzing... 📥✨", 'ai', 'f-'+Date.now()), 700);
-            }
-        }
-
-        function handleAction() { if(isProcessing) stopResponse(); else handleSend(); }
+        function handleKey(e) { if(e.key === 'Enter') sendMessage(); }
 
         function setProcessing(state) {
             isProcessing = state;
-            const btn = document.getElementById('action-btn');
-            const icon = document.getElementById('btn-icon');
-            const input = document.getElementById('user-input');
-            btn.className = state ? "btn-stop" : "btn-send";
-            icon.setAttribute("data-lucide", state ? "square" : "arrow-up");
-            input.disabled = state;
-            lucide.createIcons();
+            document.getElementById('main-ring').style.display = state ? 'block' : 'none';
+            document.getElementById('user-input').disabled = state;
         }
 
-        function stopResponse() {
-            if(abortController) abortController.abort();
-            if(typedInstance) typedInstance.destroy();
-            setProcessing(false);
-            appendMsg("Process halted. I am sorry for the break in service. 🛑", 'ai', 'stop-'+Date.now());
+        function appendMsg(content, role, ringId = null) {
+            const flow = document.getElementById('chat-flow');
+            const div = document.createElement('div');
+            div.className = `msg ${role}`;
+            
+            const id = 'msg-' + Math.random().toString(36).substr(2, 9);
+            div.innerHTML = `<div id="${id}">${content}</div>`;
+            
+            if(ringId) {
+                const ring = document.createElement('div');
+                ring.id = ringId;
+                ring.className = 'ring';
+                ring.style.display = 'block';
+                ring.style.marginTop = '10px';
+                div.appendChild(ring);
+            }
+
+            flow.appendChild(div);
+            flow.scrollTop = flow.scrollHeight;
+            return { id, ringId };
         }
 
-        async function handleSend() {
+        async function sendMessage() {
             const input = document.getElementById('user-input');
-            const val = input.value.trim();
-            if(!val) return;
+            const text = input.value.trim();
+            if(!text || isProcessing) return;
 
-            appendMsg(val, 'user');
             input.value = "";
+            appendMsg(text, 'user');
+            
+            const aiMsg = appendMsg("", 'ai', 'ring-' + Date.now());
             setProcessing(true);
 
-            const aiId = "ai-" + Date.now();
-            const rId = "ring-" + Date.now();
-            appendMsg(`<span id="${aiId}">Connecting to Core...</span>`, 'ai', rId);
-            document.getElementById(rId).style.display = "block";
-
-            await runChat(val, aiId, rId);
+            await runChat(text, aiMsg.id, aiMsg.ringId);
         }
 
+        // UPGRADED CHAT BRAIN & IMAGE ENGINE
         async function runChat(prompt, id, ring) {
             abortController = new AbortController();
+            
+            // Mode Mapping
+            let modelId = "gemini-3-flash-preview"; // FAST
+            if (currentMode === 'Think') modelId = "gemini-3-pro-preview"; // THINK
+            if (currentMode === 'Pro') modelId = "gemini-2.5-flash-image"; // NANO BANANA
+
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${GOOGLE_API_KEY}`;
+
             try {
-                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                const response = await fetch(url, {
                     method: "POST",
                     signal: abortController.signal,
-                    headers: { "Authorization": `Bearer ${GROQ_KEY}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ 
-                        model: "llama-3.3-70b-versatile",
-                        messages: [{role: "system", content: CORE_PROMPT}, ...chatHistory.slice(-6), {role: "user", content: prompt}] 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        "contents": [{ "parts": [{ "text": prompt }] }],
+                        // Enable Thinking Process for THINK mode
+                        "generationConfig": (currentMode === 'Think') ? { "thinking_level": "medium" } : {}
                     })
                 });
-                const data = await res.json();
-                const reply = data.choices[0].message.content;
-                
+
+                const data = await response.json();
                 document.getElementById(ring).style.display = "none";
+
+                // HANDLE NANO BANANA IMAGE OUTPUT
+                if (currentMode === 'Pro') {
+                    if (data.candidates && data.candidates[0].content.parts[0].inlineData) {
+                        const b64Data = data.candidates[0].content.parts[0].inlineData.data;
+                        const imgHtml = `<img src="data:image/png;base64,${b64Data}" class="media-content">`;
+                        document.getElementById(id).innerHTML = imgHtml;
+                    } else {
+                        document.getElementById(id).innerText = "Image could not be generated. Try a different prompt.";
+                    }
+                    setProcessing(false);
+                    return;
+                }
+
+                // HANDLE CHAT OUTPUT (FAST/THINK)
+                const reply = data.candidates[0].content.parts[0].text;
                 document.getElementById(id).innerHTML = "";
                 
-                typedInstance = new Typed(`#${id}`, { strings: [reply], typeSpeed: 10, showCursor: false, onComplete: () => { setProcessing(false); saveChat(); } });
+                typedInstance = new Typed(`#${id}`, {
+                    strings: [reply],
+                    typeSpeed: 10,
+                    showCursor: false,
+                    onComplete: () => {
+                        setProcessing(false);
+                        saveChat();
+                    }
+                });
+
                 chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
+
             } catch (e) {
-                if(e.name !== 'AbortError') {
+                if (e.name !== 'AbortError') {
                     document.getElementById(ring).style.display = "none";
-                    document.getElementById(id).innerText = "I am sorry, a core connection error occurred. 🛠️";
+                    document.getElementById(id).innerText = "Core Connection Error. Check your connection or API status. 🛠️";
                     setProcessing(false);
                 }
             }
         }
 
-        function appendMsg(c, t, r = "") {
-            const f = document.getElementById('chat-flow');
-            const div = document.createElement('div');
-            div.className = `msg-container ${t}-side`;
-            div.innerHTML = t === 'ai' ? `<div class="ai-avatar"><div class="ring" id="${r}"></div><img src="https://i.ibb.co/vzY8M7m/arese-logo.png" style="width:100%; border-radius:50%; border:1px solid #333;"></div><div class="msg ai">${c}</div>` : `<div class="msg user">${c}</div>`;
-            f.appendChild(div); f.scrollTop = f.scrollHeight;
-        }
-
         function saveChat() {
-            if(chatHistory.length < 1) return;
+            if(chatHistory.length < 2) return;
             let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
-            const title = chatHistory[0].content.substring(0, 20);
-            logs = logs.filter(l => l.title !== title);
-            logs.unshift({ title: title, data: chatHistory });
-            localStorage.setItem('arese_logs', JSON.stringify(logs.slice(0, 10)));
-            refreshHistory();
+            const title = chatHistory[0].content.substring(0, 25);
+            const exists = logs.findIndex(l => l.title === title);
+            
+            if(exists > -1) logs[exists].data = chatHistory;
+            else logs.unshift({ title, data: chatHistory });
+            
+            localStorage.setItem('arese_logs', JSON.stringify(logs.slice(0, 20)));
         }
 
         function refreshHistory() {
-            const list = document.getElementById('history-list'); list.innerHTML = "";
+            const list = document.getElementById('history-list');
+            list.innerHTML = "";
             let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
             logs.forEach((log, i) => {
-                const d = document.createElement('div'); d.className = "history-item";
+                const d = document.createElement('div');
+                d.className = "history-item";
                 d.innerHTML = `<span onclick="loadChat(${i})">${log.title}...</span><i data-lucide="trash-2" onclick="delChat(${i})" style="width:14px;"></i>`;
                 list.appendChild(d);
             });
@@ -275,8 +281,11 @@
             chatHistory = [];
             document.getElementById('chat-flow').innerHTML = "";
             appendMsg("Arese OS v2.5 Online. All systems green. 🦾🥀🔒", "ai", "init-ring");
+            setTimeout(() => document.getElementById('init-ring').style.display='none', 1000);
             if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar();
         }
+
+        window.onload = startNewSession;
     </script>
 </body>
 </html>
