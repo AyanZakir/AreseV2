@@ -3,57 +3,56 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Arese OS v2.0 | MAS</title>
+    <title>Arese OS v2.1 | Titanium</title>
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
+    <script src="https://unpkg.com/marked/marked.min.js"></script>
     <style>
-        :root { --blue: #00d2ff; --bg: #050505; --border: #1a1a1a; --red: #ff4b2b; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; transition: 0.2s ease; }
+        :root { --blue: #00d2ff; --bg: #050505; --border: #1a1a1a; --red: #ff4b2b; --panel: #0a0a0a; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* SIDEBAR */
-        #sidebar { position: fixed; left: -280px; width: 280px; height: 100%; background: #0a0a0a; border-right: 1px solid var(--border); z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
+        #sidebar { position: fixed; left: -280px; width: 280px; height: 100%; background: var(--panel); border-right: 1px solid var(--border); z-index: 2000; padding: 20px; display: flex; flex-direction: column; transition: 0.3s ease; }
         #sidebar.open { left: 0; box-shadow: 10px 0 50px #000; }
-        .history-item { padding: 12px; background: #0d0d0d; border-radius: 10px; margin-bottom: 8px; font-size: 13px; color: #666; cursor: pointer; border: 1px solid #111; }
+        .sidebar-title { color: var(--blue); letter-spacing: 2px; font-weight: 900; font-size: 14px; margin-bottom: 20px; }
+        .new-chat-btn { width: 100%; padding: 12px; background: var(--blue); border: none; border-radius: 12px; color: #000; font-weight: 800; cursor: pointer; margin-bottom: 15px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .history-list { flex: 1; overflow-y: auto; }
+        .history-item { padding: 12px; background: #0d0d0d; border-radius: 10px; margin-bottom: 8px; font-size: 13px; color: #666; cursor: pointer; border: 1px solid #111; display: flex; justify-content: space-between; }
+
+        /* GLOWING PILLS IN SIDEBAR */
+        .pill-section { margin-top: 15px; border-top: 1px solid #222; padding-top: 15px; }
+        .pill-label { font-size: 10px; font-weight: 900; color: #444; margin-bottom: 10px; display: block; letter-spacing: 1px; }
+        .pill-grid { display: flex; gap: 8px; flex-wrap: wrap; }
+        .pill-btn { flex: 1; padding: 8px 0; background: #000; border: 1px solid #333; border-radius: 20px; text-align: center; font-size: 11px; font-weight: bold; color: #555; cursor: pointer; transition: 0.3s; }
+        .pill-btn.active { 
+            border-color: var(--blue); color: var(--blue); background: rgba(0,210,255,0.1); 
+            box-shadow: 0 0 15px rgba(0,210,255,0.5); text-shadow: 0 0 5px var(--blue);
+        }
 
         /* HEADER */
-        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: #0a0a0a; }
-        .dev-tag { font-size: 8px; color: #444; letter-spacing: 1px; font-weight: 900; }
+        header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: var(--panel); }
+        .brand-box { text-align: center; }
+        .brand-text { font-weight: 900; font-size: 13px; letter-spacing: 2px; }
+        .dev-tag { font-size: 8px; color: #444; font-weight: 900; }
 
-        /* CHAT FLOW & SCROLLBAR */
-        #chat-flow { flex: 1; overflow-y: scroll; padding: 20px; display: flex; flex-direction: column; gap: 15px; scrollbar-width: thin; scrollbar-color: var(--blue) transparent; }
-        #chat-flow::-webkit-scrollbar { width: 4px; }
-        #chat-flow::-webkit-scrollbar-thumb { background: var(--blue); border-radius: 10px; }
-
-        .msg { max-width: 85%; padding: 12px 18px; border-radius: 20px; line-height: 1.6; font-size: 15px; }
+        /* CHAT FLOW */
+        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 18px; }
+        .msg { max-width: 85%; padding: 12px 18px; border-radius: 20px; line-height: 1.6; font-size: 15px; word-wrap: break-word; }
         .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 600; border-top-right-radius: 4px; }
         .ai { align-self: flex-start; background: #111; border: 1px solid #222; border-top-left-radius: 4px; color: #eee; }
-        .disclaimer { font-size: 10px; color: #555; margin-top: 8px; border-top: 1px solid #222; padding-top: 5px; font-weight: bold; }
+        .disclaimer { font-size: 10px; color: #444; margin-top: 10px; border-top: 1px solid #1a1a1a; padding-top: 6px; font-weight: bold; }
 
-        /* ANALYZING ANIMATION */
-        .analyzing-box { display: none; align-items: center; gap: 10px; padding: 10px 20px; color: var(--blue); font-size: 12px; font-weight: bold; }
-        .circle-loader { width: 18px; height: 18px; border: 2px solid rgba(0,210,255,0.2); border-top-color: var(--blue); border-radius: 50%; animation: spin 1s linear infinite; }
+        /* ANALYZING FEEDBACK */
+        .analyzing-box { display: none; align-items: center; gap: 10px; padding: 0 20px 10px; color: var(--blue); font-size: 12px; font-weight: 800; }
+        .ring { width: 16px; height: 16px; border: 2px solid rgba(0,210,255,0.1); border-top-color: var(--blue); border-radius: 50%; animation: spin 0.8s linear infinite; box-shadow: 0 0 8px var(--blue); }
 
-        /* PILL SELECTOR */
-        .pill-container { display: flex; justify-content: center; margin-bottom: 10px; position: relative; height: 36px; }
-        .pill-trigger { background: #111; border: 1px solid #333; padding: 0 20px; border-radius: 25px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--blue); }
-        .pill-menu { display: none; background: #111; border: 1px solid #333; border-radius: 25px; padding: 4px; position: absolute; bottom: 0; gap: 5px; z-index: 100; }
-        .pill-menu.open { display: flex; }
-
-        /* INPUT BAR */
-        .controls { padding: 10px 20px 30px; background: #050505; }
+        /* INPUT AREA */
+        .controls { padding: 10px 20px 30px; background: var(--bg); }
         .input-box { background: #111; border-radius: 30px; border: 1px solid #222; display: flex; align-items: center; padding: 5px 15px; gap: 12px; }
         textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; padding: 12px 0; font-size: 16px; max-height: 120px; }
-        
-        .action-btn { width: 40px; height: 40px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .plus-btn { background: #1a1a1a; color: #888; border: 1px solid #222; }
+        .action-btn { width: 42px; height: 42px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
         .btn-send { background: var(--blue); color: #000; }
         .btn-stop { background: var(--red); color: #fff; }
-
-        /* MENU FOR PLUS */
-        .plus-menu { display: none; position: absolute; bottom: 90px; left: 20px; background: #111; border: 1px solid #222; border-radius: 15px; padding: 10px; flex-direction: column; gap: 5px; z-index: 1000; width: 150px; }
-        .plus-opt { padding: 10px; font-size: 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; color: #ccc; }
-        .plus-opt:hover { background: #1a1a1a; border-radius: 10px; }
 
         #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; backdrop-filter: blur(4px); }
         @keyframes spin { to { transform: rotate(360deg); } }
@@ -63,55 +62,51 @@
 
     <div id="overlay" onclick="toggleSidebar()"></div>
 
-    <div id="plus-menu" class="plus-menu">
-        <div class="plus-opt" onclick="openMedia('camera')"><i data-lucide="camera" style="width:16px"></i> Camera</div>
-        <div class="plus-opt" onclick="openMedia('image/*')"><i data-lucide="image" style="width:16px"></i> Gallery</div>
-        <div class="plus-opt" onclick="openMedia('*')"><i data-lucide="file-text" style="width:16px"></i> Document</div>
-        <input type="file" id="file-input" style="display:none" onchange="handleFile(this)">
-    </div>
-
     <div id="sidebar">
-        <h3 style="color:var(--blue); letter-spacing: 2px;">ARCHIVE</h3>
-        <div id="history-list"></div>
-        <div class="settings-box" style="margin-top:auto">
-            <button class="sidebar-btn" onclick="setLang('en')">English</button>
-            <button class="sidebar-btn" onclick="setLang('ur')">Urdu</button>
-            <button class="sidebar-btn" onclick="setLang('roman')">Roman Urdu</button>
+        <div class="sidebar-title">ARESE ARCHIVE</div>
+        <button class="new-chat-btn" onclick="startNewChat()">
+            <i data-lucide="plus-circle" style="width:18px"></i> NEW CHAT
+        </button>
+        <div id="history-list" class="history-list"></div>
+
+        <div class="pill-section">
+            <span class="pill-label">RESPONSE MODE</span>
+            <div class="pill-grid">
+                <div class="pill-btn active" id="mode-fast" onclick="setMode('fast')">FAST</div>
+                <div class="pill-btn" id="mode-think" onclick="setMode('think')">THINK</div>
+                <div class="pill-btn" id="mode-pro" onclick="setMode('pro')">PRO</div>
+            </div>
+        </div>
+
+        <div class="pill-section" style="margin-bottom: 20px;">
+            <span class="pill-label">LANGUAGE</span>
+            <div class="pill-grid">
+                <div class="pill-btn active" id="pill-en" onclick="setLang('en')">EN</div>
+                <div class="pill-btn" id="pill-ur" onclick="setLang('ur')">اردو</div>
+                <div class="pill-btn" id="pill-roman" onclick="setLang('roman')">ROM</div>
+            </div>
         </div>
     </div>
 
     <header>
         <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-        <div style="text-align: center;">
-            <div style="font-weight: 900; font-size: 13px; letter-spacing: 2px;">ARESE // <span style="color:var(--blue)">CORE</span></div>
-            <div class="dev-tag">DEVELOPED BY MAS | GROQ + GEMINI</div>
+        <div class="brand-box">
+            <div class="brand-text">ARESE // <span style="color:var(--blue)">CORE</span></div>
+            <div class="dev-tag">TITANIUM v2.1 | MAS</div>
         </div>
-        <div id="status-dots" style="display:flex; gap:3px;">
-            <div class="circle-loader" style="width:12px; height:12px; display:none;" id="header-loader"></div>
-            <div id="dot-indicator" style="width:8px; height:8px; background:var(--blue); border-radius:50%"></div>
-        </div>
+        <div id="dot-indicator" style="width:10px; height:10px; background:var(--blue); border-radius:50%; box-shadow: 0 0 10px var(--blue)"></div>
     </header>
 
     <div id="chat-flow"></div>
 
     <div id="analyzing" class="analyzing-box">
-        <div class="circle-loader"></div>
+        <div class="ring"></div>
         <span id="analyze-text">Analyzing System...</span>
-    </div>
-
-    <div class="pill-container">
-        <div class="pill-trigger" onclick="togglePill()"><span id="cur-mode">FAST</span> <i data-lucide="chevron-up" style="width:12px"></i></div>
-        <div id="pill-menu" class="pill-menu">
-            <div class="pill-opt active" onclick="setMode('Fast')">FAST</div>
-            <div class="pill-opt" onclick="setMode('Think')">THINK</div>
-            <div class="pill-opt" onclick="setMode('Pro')">PRO</div>
-        </div>
     </div>
 
     <div class="controls">
         <div class="input-box">
-            <button class="action-btn plus-btn" onclick="togglePlus()"><i data-lucide="plus"></i></button>
-            <textarea id="user-input" placeholder="Enter command..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
+            <textarea id="user-input" placeholder="Message Arese..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
             <button id="action-btn" class="action-btn btn-send" onclick="handleAction()">
                 <i id="btn-icon" data-lucide="arrow-up" style="width:20px;"></i>
             </button>
@@ -119,125 +114,137 @@
     </div>
 
     <script>
-        const GROQ_KEY = "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";
-        let curLang = 'en', curMode = 'Fast', isWorking = false, controller = null;
+        const GROQ_KEY = "Gsk_xhCczshRUr3CcpCP0hvkWGdyb3FYHCkQASNx4D56cEFOnw4Zs1Av";
+        let chats = JSON.parse(localStorage.getItem('arese_v2_chats') || "[]");
+        let activeId = null, curLang = 'en', curMode = 'fast', isWorking = false, controller = null;
 
         const UI = {
-            en: { welcome: "Let's Have A Chat", place: "Enter command...", check: "AreseOS can make mistakes, so double-check it." },
-            ur: { welcome: "آئیے بات کرتے ہیں", place: "حکم درج کریں...", check: "ایریس او ایس غلطی کر سکتا ہے، اس لیے دوبارہ چیک کریں۔" },
-            roman: { welcome: "Aao gup shup lagate hain", place: "Type karo...", check: "AreseOS galti kar sakta hai, toh check kar lena." }
+            en: { welcome: "Let's Have A Chat", anal: "Analyzing...", check: "AreseOS can make mistakes, so double-check it." },
+            ur: { welcome: "آئیے بات کرتے ہیں", anal: "تجزیہ ہو رہا ہے...", check: "ایریس او ایس غلطی کر سکتا ہے، اس لیے دوبارہ چیک کریں۔" },
+            roman: { welcome: "Aao gup shup lagate hain", anal: "Checking ho rahi hai...", check: "AreseOS galti kar sakta hai, toh check kar lena." }
         };
 
-        window.onload = () => { lucide.createIcons(); appendMsg(UI[curLang].welcome, 'ai'); loadHistory(); };
+        window.onload = () => { 
+            lucide.createIcons(); 
+            if(chats.length > 0) loadChat(chats[0].id); else startNewChat();
+        };
 
-        function toggleSidebar() { document.getElementById('sidebar').classList.toggle('open'); document.getElementById('overlay').style.display = document.getElementById('sidebar').classList.contains('open') ? 'block' : 'none'; }
-        function togglePlus() { const m = document.getElementById('plus-menu'); m.style.display = m.style.display === 'flex' ? 'none' : 'flex'; }
-        function togglePill() { document.getElementById('pill-menu').classList.toggle('open'); }
-        
-        function setMode(m) { curMode = m; document.getElementById('cur-mode').innerText = m.toUpperCase(); togglePill(); }
-        function setLang(l) { curLang = l; document.getElementById('chat-flow').innerHTML = ""; appendMsg(UI[l].welcome, 'ai'); toggleSidebar(); }
-
-        function openMedia(type) { 
-            const input = document.getElementById('file-input');
-            if(type === 'camera') { input.setAttribute('capture', 'environment'); input.accept = "image/*"; }
-            else { input.removeAttribute('capture'); input.accept = type; }
-            input.click(); togglePlus();
+        function toggleSidebar() { 
+            const s = document.getElementById('sidebar');
+            s.classList.toggle('open');
+            document.getElementById('overlay').style.display = s.classList.contains('open') ? 'block' : 'none';
         }
 
-        function handleFile(input) {
-            if(input.files[0]) {
-                appendMsg(`Sent file: ${input.files[0].name}`, 'user');
-                startAnalyzing("Viewing Media...");
-                setTimeout(() => { stopAnalyzing(); appendMsg("I have analyzed the file. What would you like to know about it?", "ai"); }, 2000);
-            }
+        function setMode(m) {
+            curMode = m;
+            document.querySelectorAll('[id^="mode-"]').forEach(b => b.classList.remove('active'));
+            document.getElementById('mode-'+m).classList.add('active');
         }
 
-        function startAnalyzing(txt) {
+        function setLang(l) {
+            curLang = l;
+            document.querySelectorAll('[id^="pill-"]').forEach(b => b.classList.remove('active'));
+            document.getElementById('pill-'+l).classList.add('active');
+            document.getElementById('user-input').placeholder = "Message Arese...";
+        }
+
+        function startNewChat() {
+            activeId = Date.now();
+            chats.unshift({ id: activeId, title: "New Chat", messages: [{ role: 'ai', text: UI[curLang].welcome }] });
+            save(); render(); toggleSidebar();
+        }
+
+        function loadChat(id) { activeId = id; render(); if(document.getElementById('sidebar').classList.contains('open')) toggleSidebar(); }
+        function save() { localStorage.setItem('arese_v2_chats', JSON.stringify(chats)); refreshHistory(); }
+
+        function refreshHistory() {
+            const list = document.getElementById('history-list'); list.innerHTML = "";
+            chats.slice(0, 15).forEach(c => {
+                const item = document.createElement('div');
+                item.className = `history-item ${c.id === activeId ? 'active' : ''}`;
+                item.innerHTML = `<span onclick="loadChat(${c.id})" style="flex:1">${c.title}</span><i data-lucide="trash-2" onclick="delChat(${c.id})" style="width:14px; color:#333"></i>`;
+                list.appendChild(item);
+            });
+            lucide.createIcons();
+        }
+
+        function delChat(id) { chats = chats.filter(c => c.id !== id); save(); if(activeId === id) startNewChat(); }
+
+        function render() {
+            const chat = chats.find(c => c.id === activeId);
+            const flow = document.getElementById('chat-flow'); flow.innerHTML = "";
+            if(chat) chat.messages.forEach(m => appendUI(m.role, m.text));
+            flow.scrollTop = flow.scrollHeight;
+        }
+
+        function appendUI(role, text) {
+            const flow = document.getElementById('chat-flow'), div = document.createElement('div');
+            div.className = `msg ${role}`;
+            let content = role === 'ai' ? marked.parse(text) : text;
+            if(role === 'ai') content += `<div class="disclaimer">${UI[curLang].check}</div>`;
+            div.innerHTML = content;
+            flow.appendChild(div); flow.scrollTop = flow.scrollHeight;
+        }
+
+        function handleAction() { isWorking ? stop() : send(); }
+
+        async function send() {
+            const input = document.getElementById('user-input'), val = input.value.trim();
+            if(!val) return;
+            const chat = chats.find(c => c.id === activeId);
+            chat.messages.push({ role: 'user', text: val });
+            if(chat.title === "New Chat") chat.title = val.substring(0, 20) + "...";
+            appendUI('user', val);
+            input.value = ""; input.style.height = "auto";
+            startWorking();
+            await callGroq(chat);
+        }
+
+        async function callGroq(chatObj) {
+            controller = new AbortController();
+            const model = curMode === 'pro' ? "llama-3.3-70b-versatile" : "llama-3.1-8b-instant";
+            const sys = `You are Arese OS Core. Language: ${curLang}. Mode: ${curMode}. 
+            Traits: Helpful, professional, ignores minor typos like 'bha' for 'bhai'. 
+            Developer: MAS. No image generation.`;
+            
+            const history = chatObj.messages.slice(-6).map(m => ({ role: m.role === 'user' ? 'user' : 'assistant', content: m.text }));
+
+            try {
+                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+                    method: "POST",
+                    signal: controller.signal,
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
+                    body: JSON.stringify({ model, messages: [{role:"system", content:sys}, ...history] })
+                });
+                const data = await res.json();
+                const reply = data.choices[0].message.content;
+                chatObj.messages.push({ role: 'ai', text: reply });
+                save(); appendUI('ai', reply);
+            } catch(e) { 
+                if(e.name !== 'AbortError') appendUI('ai', "Core Connection Lost."); 
+            } finally { stopWorking(); }
+        }
+
+        function startWorking() {
             isWorking = true;
             document.getElementById('analyzing').style.display = 'flex';
-            document.getElementById('analyze-text').innerText = txt;
-            document.getElementById('header-loader').style.display = 'block';
-            document.getElementById('dot-indicator').style.display = 'none';
+            document.getElementById('analyze-text').innerText = UI[curLang].anal;
             const btn = document.getElementById('action-btn');
             btn.className = "action-btn btn-stop";
             document.getElementById('btn-icon').setAttribute("data-lucide", "square");
             lucide.createIcons();
         }
 
-        function stopAnalyzing() {
+        function stopWorking() {
             isWorking = false;
             document.getElementById('analyzing').style.display = 'none';
-            document.getElementById('header-loader').style.display = 'none';
-            document.getElementById('dot-indicator').style.display = 'block';
             const btn = document.getElementById('action-btn');
             btn.className = "action-btn btn-send";
             document.getElementById('btn-icon').setAttribute("data-lucide", "arrow-up");
             lucide.createIcons();
         }
 
-        function handleAction() { isWorking ? stop() : send(); }
-
-        async function send() {
-            const input = document.getElementById('user-input');
-            const val = input.value.trim();
-            if(!val) return;
-            input.value = ""; input.style.height = "auto";
-            appendMsg(val, 'user');
-            
-            startAnalyzing("Thinking...");
-            const id = "ai-" + Date.now();
-            appendMsg("...", 'ai', id);
-            await callGroq(val, id);
-        }
-
-        async function callGroq(p, id) {
-            controller = new AbortController();
-            const sys = `You are Arese OS by MAS (Ayan Khan). Powered by Groq + Gemini. 
-            Rules: Ignore typos (e.g., 'bha' = 'bhai'). Only talk about images if user says 'Create' or 'Generate'. 
-            Language: ${curLang}. Don't compliment MAS unless asked. Be accurate.`;
-            
-            try {
-                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-                    method: "POST",
-                    signal: controller.signal,
-                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
-                    body: JSON.stringify({ model: "llama-3.3-70b-versatile", messages: [{role:"system", content:sys}, {role:"user", content:p}] })
-                });
-                const data = await res.json();
-                const reply = data.choices[0].message.content;
-                document.getElementById(id).innerHTML = "";
-                new Typed(`#${id}`, { strings:[reply + `<div class="disclaimer">${UI[curLang].check}</div>`], typeSpeed:10, showCursor:false, onComplete:() => { stopAnalyzing(); saveHistory(p); } });
-            } catch(e) { if(e.name !== 'AbortError') { stopAnalyzing(); document.getElementById(id).innerText = "Core Timeout."; } }
-        }
-
-        function stop() { if(controller) controller.abort(); stopAnalyzing(); }
-
-        function appendMsg(c, t, id="") {
-            const f = document.getElementById('chat-flow');
-            const div = document.createElement('div');
-            div.className = `msg ${t}`;
-            if(id) div.id = id;
-            div.innerHTML = c;
-            f.appendChild(div); f.scrollTop = f.scrollHeight;
-        }
-
-        function saveHistory(q) {
-            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
-            logs.unshift({title: q.substring(0, 20)});
-            localStorage.setItem('arese_logs', JSON.stringify(logs.slice(0, 10)));
-            loadHistory();
-        }
-
-        function loadHistory() {
-            const list = document.getElementById('history-list'); list.innerHTML = "";
-            let logs = JSON.parse(localStorage.getItem('arese_logs') || "[]");
-            logs.forEach(log => {
-                const item = document.createElement('div');
-                item.className = "history-item";
-                item.innerText = log.title + "...";
-                list.appendChild(item);
-            });
-        }
+        function stop() { if(controller) controller.abort(); stopWorking(); }
     </script>
 </body>
 </html>
