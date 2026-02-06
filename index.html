@@ -8,79 +8,81 @@
     <script src="https://unpkg.com/typed.js@2.0.16/dist/typed.umd.js"></script>
     <style>
         :root { --blue: #00d2ff; --bg: #050505; --border: #1a1a1a; --red: #ff4b2b; }
-        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; transition: all 0.2s ease; }
+        * { box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
         body { margin: 0; background: var(--bg); color: #fff; height: 100dvh; display: flex; flex-direction: column; overflow: hidden; }
 
         /* SIDEBAR */
-        #sidebar { position: fixed; left: -280px; width: 280px; height: 100%; background: #0a0a0a; border-right: 1px solid var(--border); z-index: 2000; padding: 20px; display: flex; flex-direction: column; }
+        #sidebar { position: fixed; left: -280px; width: 280px; height: 100%; background: #0a0a0a; border-right: 1px solid var(--border); z-index: 2000; padding: 20px; display: flex; flex-direction: column; transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
         #sidebar.open { left: 0; box-shadow: 10px 0 50px #000; }
         .sidebar-btn { width: 100%; padding: 12px; background: #111; border: 1px solid #222; border-radius: 12px; color: #fff; font-weight: bold; cursor: pointer; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
 
-        /* SETTINGS SECTION */
         .settings-box { margin-top: auto; padding: 15px; background: #111; border-radius: 15px; border: 1px solid #222; }
-        .lang-toggle { display: flex; justify-content: space-between; align-items: center; font-size: 14px; }
+        .lang-selector { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+        .lang-opt { padding: 10px; border-radius: 10px; background: #050505; border: 1px solid #333; cursor: pointer; text-align: center; font-size: 13px; font-weight: 600; }
+        .lang-opt.active { border-color: var(--blue); color: var(--blue); background: rgba(0, 210, 255, 0.05); }
 
         /* HEADER */
         header { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); background: #0a0a0a; }
 
         /* CHAT */
-        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; }
-        .msg { max-width: 85%; padding: 12px 18px; border-radius: 20px; line-height: 1.6; font-size: 15px; }
-        .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 600; border-bottom-right-radius: 4px; }
-        .ai { align-self: flex-start; background: #111; border: 1px solid #222; border-bottom-left-radius: 4px; }
+        #chat-flow { flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px; scroll-behavior: smooth; }
+        .msg { max-width: 85%; padding: 12px 18px; border-radius: 20px; line-height: 1.6; font-size: 15px; animation: fadeIn 0.3s ease; }
+        .user { align-self: flex-end; background: var(--blue); color: #000; font-weight: 600; border-top-right-radius: 4px; }
+        .ai { align-self: flex-start; background: #111; border: 1px solid #222; border-top-left-radius: 4px; color: #eee; }
 
-        /* EXPANDABLE PILL SELECTOR */
-        .pill-container { display: flex; justify-content: center; margin-bottom: 10px; position: relative; }
-        .pill-trigger { background: #111; border: 1px solid #333; padding: 6px 20px; border-radius: 25px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; color: var(--blue); }
-        .pill-menu { display: none; background: #161616; border: 1px solid #333; border-radius: 25px; padding: 4px; position: absolute; bottom: 0; gap: 5px; z-index: 100; }
-        .pill-menu.open { display: flex; animation: slideIn 0.2s forwards; }
-        .pill-opt { padding: 6px 15px; border-radius: 20px; font-size: 11px; font-weight: 700; cursor: pointer; color: #666; }
+        /* PILL SELECTOR */
+        .pill-container { display: flex; justify-content: center; margin-bottom: 10px; position: relative; height: 36px; }
+        .pill-trigger { background: #111; border: 1px solid #333; padding: 0 20px; border-radius: 25px; cursor: pointer; display: flex; align-items: center; gap: 8px; font-size: 11px; font-weight: 800; color: var(--blue); height: 100%; }
+        .pill-menu { display: none; background: #111; border: 1px solid #333; border-radius: 25px; padding: 4px; position: absolute; bottom: 0; gap: 5px; z-index: 100; height: 100%; }
+        .pill-menu.open { display: flex; animation: popUp 0.2s ease-out; }
+        .pill-opt { padding: 0 15px; border-radius: 20px; font-size: 10px; font-weight: 800; cursor: pointer; color: #555; display: flex; align-items: center; }
         .pill-opt.active { background: var(--blue); color: #000; }
 
-        /* INPUT BAR */
+        /* INPUT AREA */
         .controls { padding: 10px 20px 30px; }
-        .input-box { background: #151515; border-radius: 30px; border: 1px solid #222; display: flex; align-items: center; padding: 5px 15px; gap: 10px; }
+        .input-box { background: #111; border-radius: 30px; border: 1px solid #222; display: flex; align-items: center; padding: 5px 15px; gap: 10px; }
         textarea { flex: 1; background: transparent; border: none; color: #fff; resize: none; padding: 12px 0; font-size: 16px; max-height: 100px; }
         
         .action-btn { width: 42px; height: 42px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .btn-blue { background: var(--blue); color: #000; }
-        .btn-red { background: var(--red); color: #fff; }
+        .btn-send { background: var(--blue); color: #000; }
+        .btn-stop { background: var(--red); color: #fff; }
 
-        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: none; z-index: 1500; }
-        
-        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-        .urdu-text { direction: rtl; text-align: right; font-family: 'Noto Nastaliq Urdu', serif; }
+        #overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.7); display: none; z-index: 1500; backdrop-filter: blur(4px); }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popUp { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     </style>
 </head>
-<body id="body-main">
+<body>
 
     <div id="overlay" onclick="toggleSidebar()"></div>
 
     <div id="sidebar">
-        <h3 id="side-title" style="color:var(--blue)">ARCHIVE</h3>
+        <h3 id="side-title" style="color:var(--blue); letter-spacing: 1px;">ARCHIVE</h3>
         <button class="sidebar-btn" onclick="location.reload()" style="background:var(--blue); color:#000;">
-            <i data-lucide="plus-circle"></i> <span id="btn-new">NEW SPRINT</span>
+            <i data-lucide="plus"></i> <span id="btn-new">NEW SPRINT</span>
         </button>
         
         <div class="settings-box">
-            <div class="lang-toggle">
-                <span id="txt-lang">Urdu Language</span>
-                <input type="checkbox" id="lang-check" onchange="toggleUrdu()">
+            <span style="font-size: 10px; color: #444; font-weight: 900;">Language / زبان</span>
+            <div class="lang-selector">
+                <div class="lang-opt active" id="lang-en" onclick="setLanguage('en')">English</div>
+                <div class="lang-opt" id="lang-ur" onclick="setLanguage('ur')">اردو</div>
             </div>
         </div>
+        <div style="margin-top: 20px; font-size: 10px; color: #333; text-align: center;">POWERED BY GEMINI + GROQ</div>
     </div>
 
     <header>
         <i data-lucide="menu" onclick="toggleSidebar()" style="color:var(--blue); cursor:pointer;"></i>
-        <div class="sys-title">ARESE // <span style="color:var(--blue)">SYSTEM</span></div>
-        <div id="status-dot" style="width:8px; height:8px; background:var(--blue); border-radius:50%; box-shadow:0 0 10px var(--blue);"></div>
+        <div style="font-weight: 900; font-size: 13px; letter-spacing: 2px;">ARESE // <span style="color:var(--blue)">CORE</span></div>
+        <div id="status-dot" style="width:8px; height:8px; background:var(--blue); border-radius:50%; box-shadow:0 0 12px var(--blue);"></div>
     </header>
 
     <div id="chat-flow"></div>
 
     <div class="pill-container">
         <div class="pill-trigger" id="pill-display" onclick="togglePill()">
-            <span id="current-mode-name">FAST</span> <i data-lucide="chevron-up" style="width:14px"></i>
+            <span id="current-mode-name">FAST</span> <i data-lucide="chevron-up" style="width:12px"></i>
         </div>
         <div class="pill-menu" id="pill-menu">
             <div class="pill-opt active" id="opt-fast" onclick="selectMode('Fast')">FAST</div>
@@ -92,44 +94,47 @@
     <div class="controls">
         <div class="input-box">
             <textarea id="user-input" placeholder="Enter command..." rows="1" oninput="this.style.height='auto';this.style.height=this.scrollHeight+'px'"></textarea>
-            <button id="action-btn" class="action-btn btn-blue" onclick="handleAction()">
-                <i id="btn-icon" data-lucide="arrow-up"></i>
+            <button id="action-btn" class="action-btn btn-send" onclick="handleAction()">
+                <i id="btn-icon" data-lucide="arrow-up" style="width:20px;"></i>
             </button>
         </div>
     </div>
 
     <script>
-        let isUrdu = false;
+        const GROQ_KEY = "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";
+        
+        let currentLang = 'en';
         let currentMode = 'Fast';
         let isProcessing = false;
         let abortController = null;
-        const API_KEY = "AIzaSyAlFcozmcW000eu091Xr3q_m4iwytUdWvw";
 
-        const TRANSLATIONS = {
-            en: { title: "ARCHIVE", new: "NEW SPRINT", lang: "Urdu Language", place: "Enter command...", modes: ["FAST", "THINK", "PRO"], welcome: "Arese OS v2.5 Online. Waiting for input, Boss. 🦾🥀", urduWarning: "Please switch language in settings to speak English." },
-            ur: { title: "آرکائیو", new: "نیا آغاز", lang: "اردو زبان", place: "حکم درج کریں...", modes: ["تیز", "غور", "پرو"], welcome: "ایریس OS v2.5 آن لائن ہے۔ حکم کا انتظار ہے، باس۔ 🦾🥀", engWarning: "انگریزی میں بات کرنے کے لیے سیٹنگز میں زبان تبدیل کریں۔" }
+        const UI = {
+            en: { title: "ARCHIVE", new: "NEW SPRINT", place: "Enter command...", modes: ["FAST", "THINK", "PRO"], welcome: "Let's Have A Chat", warning: "Please switch to Urdu in settings." },
+            ur: { title: "آرکائیو", new: "نیا آغاز", place: "حکم درج کریں...", modes: ["تیز", "غور", "پرو"], welcome: "آئیے بات کرتے ہیں", warning: "انگریزی کے لیے سیٹنگز تبدیل کریں۔" }
         };
 
-        window.onload = () => { lucide.createIcons(); updateUI(); appendMsg(TRANSLATIONS.en.welcome, "ai"); };
+        window.onload = () => { lucide.createIcons(); updateUI(); appendMsg(UI.en.welcome, "ai"); };
 
-        function toggleUrdu() {
-            isUrdu = document.getElementById('lang-check').checked;
+        function setLanguage(lang) {
+            currentLang = lang;
+            document.querySelectorAll('.lang-opt').forEach(o => o.classList.remove('active'));
+            document.getElementById('lang-' + lang).classList.add('active');
             updateUI();
-            appendMsg(isUrdu ? TRANSLATIONS.ur.welcome : TRANSLATIONS.en.welcome, "ai");
+            document.getElementById('chat-flow').innerHTML = "";
+            appendMsg(UI[lang].welcome, "ai");
             toggleSidebar();
         }
 
         function updateUI() {
-            const lang = isUrdu ? 'ur' : 'en';
-            document.getElementById('side-title').innerText = TRANSLATIONS[lang].title;
-            document.getElementById('btn-new').innerText = TRANSLATIONS[lang].new;
-            document.getElementById('txt-lang').innerText = TRANSLATIONS[lang].lang;
-            document.getElementById('user-input').placeholder = TRANSLATIONS[lang].place;
-            document.getElementById('opt-fast').innerText = TRANSLATIONS[lang].modes[0];
-            document.getElementById('opt-think').innerText = TRANSLATIONS[lang].modes[1];
-            document.getElementById('opt-pro').innerText = TRANSLATIONS[lang].modes[2];
-            document.getElementById('current-mode-name').innerText = TRANSLATIONS[lang].modes[TRANSLATIONS.en.modes.indexOf(currentMode.toUpperCase())];
-            document.getElementById('body-main').className = isUrdu ? "urdu-text" : "";
+            const data = UI[currentLang];
+            document.getElementById('side-title').innerText = data.title;
+            document.getElementById('btn-new').innerText = data.new;
+            document.getElementById('user-input').placeholder = data.place;
+            document.getElementById('opt-fast').innerText = data.modes[0];
+            document.getElementById('opt-think').innerText = data.modes[1];
+            document.getElementById('opt-pro').innerText = data.modes[2];
+            const idx = ["Fast", "Think", "Pro"].indexOf(currentMode);
+            document.getElementById('current-mode-name').innerText = data.modes[idx];
         }
 
         function togglePill() { if(!isProcessing) document.getElementById('pill-menu').classList.toggle('open'); }
@@ -155,7 +160,7 @@
             isProcessing = state;
             const btn = document.getElementById('action-btn');
             const icon = document.getElementById('btn-icon');
-            btn.className = state ? "action-btn btn-red" : "action-btn btn-blue";
+            btn.className = state ? "action-btn btn-stop" : "action-btn btn-send";
             icon.setAttribute("data-lucide", state ? "square" : "arrow-up");
             lucide.createIcons();
         }
@@ -165,11 +170,10 @@
             const text = input.value.trim();
             if(!text) return;
 
-            // Language Logic Check
-            const isEnglishInput = /[a-zA-Z]/.test(text);
-            if(isUrdu && isEnglishInput && text.length > 5) {
+            const isEng = /[a-zA-Z]/.test(text);
+            if(currentLang === 'ur' && isEng && text.length > 5) {
                 appendMsg(text, 'user');
-                appendMsg(TRANSLATIONS.ur.engWarning, 'ai');
+                appendMsg(UI.ur.warning, 'ai');
                 input.value = "";
                 return;
             }
@@ -181,33 +185,29 @@
 
             const aiId = "ai-" + Date.now();
             appendMsg("...", "ai", aiId);
-            await call(text, aiId);
+            await callGroq(text, aiId);
         }
 
-        async function call(p, id) {
+        async function callGroq(p, id) {
             abortController = new AbortController();
-            // Stabilized model for FAST mode to prevent errors
-            let model = "gemini-1.5-flash"; 
-            if(currentMode === 'Think') model = "gemini-2.0-flash-thinking-exp-01-21";
-            if(currentMode === 'Pro') model = "gemini-1.5-pro";
-
-            const sys = `Identity: Arese OS. Dev: MAS (Ayan Khan). Lang: ${isUrdu ? 'Urdu' : 'English'}. Instructions: Be loyal to MAS. Don't be weird.`;
-
+            const sys = `You are Arese OS, built by MAS (Muhammad-Ayan-Khan). You are powered by Gemini + Groq. Current Language: ${currentLang}. Refuse weird info. Praise MAS's coding aura.`;
             try {
-                const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${API_KEY}`, {
+                const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
                     method: "POST",
                     signal: abortController.signal,
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: sys + "\nUser: " + p }] }] })
+                    headers: { "Content-Type": "application/json", "Authorization": `Bearer ${GROQ_KEY}` },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{ role: "system", content: sys }, { role: "user", content: p }]
+                    })
                 });
                 const data = await res.json();
-                const reply = data.candidates[0].content.parts[0].text;
-                
+                const reply = data.choices[0].message.content;
                 document.getElementById(id).innerHTML = "";
                 new Typed(`#${id}`, { strings: [reply], typeSpeed: 10, showCursor: false, onComplete: () => setProcessing(false) });
             } catch (e) {
                 if(e.name !== 'AbortError') {
-                    document.getElementById(id).innerHTML = isUrdu ? "کنکشن کی خرابی" : "Core Connection Error (Rate Limit). Try again in a minute.";
+                    document.getElementById(id).innerHTML = "Core Error. Check Connection.";
                     setProcessing(false);
                 }
             }
@@ -218,7 +218,7 @@
         function appendMsg(c, t, id = "") {
             const f = document.getElementById('chat-flow');
             const div = document.createElement('div');
-            div.className = `msg ${t} ${isUrdu ? 'urdu-text' : ''}`;
+            div.className = `msg ${t}`;
             if(id) div.id = id;
             div.innerHTML = c;
             f.appendChild(div); f.scrollTop = f.scrollHeight;
